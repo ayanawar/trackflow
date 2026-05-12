@@ -1,21 +1,13 @@
 'use client'
-import { useQuery } from '@tanstack/react-query'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import { formatDuration } from '@/lib/utils'
-import type { Stats, Project } from '@/types'
+import { useStats } from '@/hooks/useStats'
+import { useProjects } from '@/hooks/useProjects'
 
 export default function DashboardPage() {
-  const { data: stats } = useQuery<Stats>({
-    queryKey: ['stats'],
-    queryFn: () => api.get('/stats').then(r => r.data),
-  })
-
-  const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ['projects'],
-    queryFn: () => api.get('/projects').then(r => r.data),
-  })
+  const { data: stats } = useStats()
+  const { data: projects = [] } = useProjects()
 
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const today = new Date().getDay()
@@ -36,7 +28,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="p-7 flex-1 overflow-y-auto">
-        {/* Summary cards */}
         <div className="grid grid-cols-3 gap-4 mb-7">
           {[
             { label: 'Today', value: formatDuration(stats?.todaySeconds ?? 0) },
@@ -51,7 +42,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-[1fr_260px] gap-5">
-          {/* Bar chart */}
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-white mb-5">Hours per Day (Last 7 Days)</h2>
             <ResponsiveContainer width="100%" height={200}>
@@ -71,7 +61,6 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Projects breakdown */}
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-white mb-4">Projects</h2>
             {projects.length === 0
@@ -100,9 +89,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Weekly day cards */}
         <div className="grid grid-cols-7 gap-2 mt-5">
-          {(stats?.dailyTotals ?? []).map((d, i) => {
+          {(stats?.dailyTotals ?? []).map((d) => {
             const isToday = new Date(d.date + 'T00:00:00').getDay() === today
             const maxDay = Math.max(...(stats?.dailyTotals ?? []).map(x => x.seconds), 3600)
             return (

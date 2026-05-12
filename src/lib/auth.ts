@@ -2,9 +2,18 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'trackflow-secret-key-change-in-production'
-)
+const INSECURE_DEFAULT = 'trackflow-secret-key-change-in-production'
+const rawSecret = process.env.JWT_SECRET
+
+if (!rawSecret || rawSecret === INSECURE_DEFAULT) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET is not set or uses the insecure default. Set a strong secret before deploying.')
+  } else {
+    console.warn('[auth] JWT_SECRET is not set or uses the insecure default. Set JWT_SECRET in .env.local.')
+  }
+}
+
+const JWT_SECRET = new TextEncoder().encode(rawSecret ?? INSECURE_DEFAULT)
 const COOKIE_NAME = 'tf_token'
 
 export interface JWTPayload {

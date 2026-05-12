@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Tag } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 
@@ -14,9 +14,15 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuthStore()
 
   const initials = user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() ?? 'U'
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/auth/login')
+  }
 
   return (
     <aside className="w-[220px] min-w-[220px] flex flex-col bg-[rgb(var(--bg-secondary))] border-r border-white/[0.07] h-screen sticky top-0">
@@ -43,7 +49,7 @@ export default function Sidebar() {
         <Link href="/settings" className={cn('nav-link', pathname === '/settings' && 'active')}>
           <Settings size={15} />Settings
         </Link>
-        <button className="nav-link text-white/40 hover:text-accent-red" onClick={logout}>
+        <button className="nav-link text-white/40 hover:text-accent-red" onClick={handleLogout}>
           <LogOut size={15} />Sign out
         </button>
         <div className="flex items-center gap-2.5 px-3 py-2 mt-1">
