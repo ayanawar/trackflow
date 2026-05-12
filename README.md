@@ -13,7 +13,7 @@ src/
 ├── app/
 │   ├── api/                  ← Backend (Next.js API Routes)
 │   │   ├── auth/             
-│   │   │   ├── register/     POST — create account
+│   │   │   ├── register/     POST —  create account
 │   │   │   ├── login/        POST — login, set JWT cookie
 │   │   │   ├── logout/       POST — clear cookie
 │   │   │   └── me/           GET — current user, PATCH — update profile
