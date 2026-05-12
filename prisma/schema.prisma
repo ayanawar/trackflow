@@ -1,0 +1,78 @@
+// Prisma Schema for TrackFlow
+// Supports SQLite (dev) and PostgreSQL (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = env("DATABASE_PROVIDER") // "sqlite" or "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  workspace String   @default("My Workspace")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects    Project[]
+  timeEntries TimeEntry[]
+  tags        Tag[]
+
+  @@map("users")
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  client    String?
+  color     String   @default("#4f8ef7")
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@map("projects")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#888888")
+  userId    String
+  createdAt DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+
+  @@unique([name, userId])
+  @@map("tags")
+}
+
+model TimeEntry {
+  id          String    @id @default(cuid())
+  description String?   @default("")
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?      // seconds
+  isRunning   Boolean   @default(false)
+  userId      String
+  projectId   String?
+  tagId       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tag     Tag?     @relation(fields: [tagId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startTime])
+  @@index([userId, isRunning])
+  @@map("time_entries")
+}

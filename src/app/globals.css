@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary:   15 17 23;
+  --bg-secondary: 22 27 39;
+  --bg-card:      24 31 46;
+}
+
+body {
+  background: rgb(var(--bg-primary));
+  color: #e8eaf2;
+  font-family: 'DM Sans', sans-serif;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+@layer components {
+  .card { @apply bg-[rgb(var(--bg-card))] border border-white/[0.08] rounded-xl; }
+  .btn-primary { @apply flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:brightness-110 transition-all active:scale-95; }
+  .btn-ghost { @apply flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/60 hover:text-white hover:border-white/20 transition-all; }
+  .input { @apply w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-accent/60 transition-colors; }
+  .label { @apply block text-[11px] text-white/40 mb-1.5 font-medium uppercase tracking-widest; }
+  .nav-link { @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:bg-white/5 hover:text-white transition-all w-full text-left; }
+  .nav-link.active { @apply bg-accent/10 text-accent; }
+  .stat-card { @apply card p-5; }
+}
