@@ -71,10 +71,10 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-3 backdrop-blur-sm sm:items-center"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-2xl p-6 w-[440px] max-w-[95vw] shadow-2xl">
+      <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-[440px] overflow-y-auto rounded-2xl border border-white/10 bg-[rgb(var(--bg-secondary))] p-4 shadow-2xl sm:p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-semibold text-white">{entry ? 'Edit Entry' : 'Add Time Entry'}</h2>
           <button className="text-white/40 hover:text-white transition-colors" onClick={onClose}><X size={16} /></button>
@@ -86,7 +86,7 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
             <input className="input" placeholder="What did you work on?" {...register('description')} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="label">Start time</label>
               <input className="input" type="time" {...register('startTime', { required: true })} />
@@ -110,9 +110,9 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
             <input className="input" placeholder="e.g. billable, meeting, dev" {...register('tag')} />
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
-            <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={saveMutation.isPending}>
+          <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+            <button type="button" className="btn-ghost w-full sm:w-auto" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-primary w-full sm:w-auto" disabled={saveMutation.isPending}>
               {saveMutation.isPending ? 'Saving…' : 'Save Entry'}
             </button>
           </div>

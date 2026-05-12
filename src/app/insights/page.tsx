@@ -72,17 +72,18 @@ Recent 20 entries:\n${recent || 'None'}`
 
   return (
     <AppShell>
-      <div className="border-b border-white/[0.07] px-7 py-4 flex items-center gap-3 bg-[rgb(var(--bg-secondary))]">
+      <div className="page-header flex items-center gap-3">
         <Sparkles size={15} className="text-accent-purple" />
-        <div>
+        <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
           <p className="text-xs text-white/40 mt-0.5">Powered by Claude</p>
         </div>
       </div>
 
-      <div className="p-7 max-w-3xl flex-1 overflow-y-auto">
-        <div className="card p-5 mb-6">
-          <div className="flex gap-3">
+      <div className="page-body">
+        <div className="mx-auto w-full max-w-3xl">
+        <div className="card p-4 sm:p-5 mb-6">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <input
               className="input flex-1"
               placeholder="Ask about your time data…"
@@ -90,7 +91,7 @@ Recent 20 entries:\n${recent || 'None'}`
               onChange={e => setQuestion(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && ask(question)}
             />
-            <button className="btn-primary flex-shrink-0" onClick={() => ask(question)} disabled={loading}>
+            <button className="btn-primary flex-shrink-0 w-full sm:w-auto" onClick={() => ask(question)} disabled={loading}>
               <Send size={14} />{loading ? 'Thinking…' : 'Ask'}
             </button>
           </div>
@@ -106,7 +107,7 @@ Recent 20 entries:\n${recent || 'None'}`
         </div>
 
         {(response || loading) && (
-          <div className="card p-5 border-l-2 border-accent-purple">
+          <div className="card p-4 sm:p-5 border-l-2 border-accent-purple">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles size={13} className="text-accent-purple" />
               <span className="text-xs font-medium text-accent-purple">Claude</span>
@@ -118,7 +119,7 @@ Recent 20 entries:\n${recent || 'None'}`
               </div>
             ) : (
               <div
-                className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap"
+                className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap break-words"
                 dangerouslySetInnerHTML={{
                   __html: response
                     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')
@@ -128,6 +129,7 @@ Recent 20 entries:\n${recent || 'None'}`
             )}
           </div>
         )}
+        </div>
       </div>
     </AppShell>
   )

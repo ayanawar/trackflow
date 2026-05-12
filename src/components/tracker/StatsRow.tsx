@@ -7,7 +7,7 @@ export default function StatsRow({ stats }: { stats?: Stats }) {
   const weekPct = stats ? Math.min(100, Math.round(stats.weekSeconds / weekGoal * 100)) : 0
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-7">
+    <div className="grid grid-cols-1 min-[380px]:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-7">
       {[
         { label: 'Today', value: formatDuration(stats?.todaySeconds ?? 0), sub: 'tracked today', icon: Clock, color: '#34d399' },
         { label: 'This Week', value: formatDuration(stats?.weekSeconds ?? 0), sub: `${weekPct}% of 40h goal`, icon: Calendar, color: '#4f8ef7' },
@@ -18,7 +18,7 @@ export default function StatsRow({ stats }: { stats?: Stats }) {
           <div className="flex items-center gap-1.5 text-xs text-white/40 mb-2.5">
             <Icon size={12} style={{ color }} />{label}
           </div>
-          <div className={`font-semibold font-mono text-white leading-none mb-1 ${small ? 'text-base pt-1' : 'text-2xl'}`}>{value}</div>
+          <div className={`font-semibold font-mono text-white leading-tight mb-1 break-words ${small ? 'text-base pt-1' : 'text-xl sm:text-2xl'}`}>{value}</div>
           <div className="text-[11.5px] text-white/40">{sub}</div>
         </div>
       ))}

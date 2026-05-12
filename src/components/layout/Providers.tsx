@@ -23,7 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         // 401 = not logged in, silently ignore
         setUser(null)
       })
-  }, []) // empty deps — run once only
+  }, [setUser, user])
 
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }

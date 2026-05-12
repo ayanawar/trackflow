@@ -44,19 +44,20 @@ export default function ProjectsPage() {
 
   return (
     <AppShell>
-      <div className="border-b border-white/[0.07] px-7 py-4 flex items-center justify-between bg-[rgb(var(--bg-secondary))]">
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-[15px] font-semibold text-white">Projects</h1>
-        <button className="btn-primary" onClick={openCreate}><Plus size={14} /> New Project</button>
+        <button className="btn-primary w-full sm:w-auto" onClick={openCreate}><Plus size={14} /> New Project</button>
       </div>
 
-      <div className="p-7 flex-1 overflow-y-auto">
+      <div className="page-body">
+        <div className="page-container">
         {projects.length === 0 ? (
-          <div className="text-center py-24 text-white/30">
+          <div className="text-center py-20 sm:py-24 text-white/30">
             <div className="text-4xl mb-3">📁</div>
             <p className="text-sm">No projects yet. Create your first!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {projects.map(p => (
               <div key={p.id} className="card p-5 group" style={{ borderLeft: `3px solid ${p.color}` }}>
                 <div className="flex items-start justify-between mb-2">
@@ -73,18 +74,19 @@ export default function ProjectsPage() {
                     </button>
                   </div>
                 </div>
-                {p.client && <p className="text-xs text-white/40 mb-3 ml-4">{p.client}</p>}
-                <div className="text-2xl font-mono font-semibold text-white mt-3">{formatDuration(p.totalSeconds ?? 0)}</div>
+                {p.client && <p className="text-xs text-white/40 mb-3 ml-4 truncate">{p.client}</p>}
+                <div className="text-xl sm:text-2xl font-mono font-semibold text-white mt-3 break-words">{formatDuration(p.totalSeconds ?? 0)}</div>
                 <div className="text-xs text-white/30 mt-1">{p.entryCount ?? 0} entries</div>
               </div>
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={e => e.target === e.currentTarget && setModal(false)}>
-          <div className="bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-2xl p-6 w-[400px] max-w-[95vw] shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-3 backdrop-blur-sm sm:items-center" onClick={e => e.target === e.currentTarget && setModal(false)}>
+          <div className="max-h-[calc(100dvh-1.5rem)] w-full max-w-[400px] overflow-y-auto rounded-2xl border border-white/10 bg-[rgb(var(--bg-secondary))] p-4 shadow-2xl sm:p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-white">{editProject ? 'Edit Project' : 'New Project'}</h2>
               <button className="text-white/40 hover:text-white" onClick={() => setModal(false)}><X size={16} /></button>
@@ -109,9 +111,9 @@ export default function ProjectsPage() {
                   ))}
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-1">
-                <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saveMutation.isPending}>
+              <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+                <button type="button" className="btn-ghost w-full sm:w-auto" onClick={() => setModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary w-full sm:w-auto" disabled={saveMutation.isPending}>
                   {saveMutation.isPending ? 'Saving…' : editProject ? 'Save Changes' : 'Create Project'}
                 </button>
               </div>

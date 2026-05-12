@@ -30,14 +30,15 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="border-b border-white/[0.07] px-7 py-4 bg-[rgb(var(--bg-secondary))]">
+      <div className="page-header">
         <h1 className="text-[15px] font-semibold text-white">Dashboard</h1>
         <p className="text-xs text-white/40 mt-0.5">Weekly overview</p>
       </div>
 
-      <div className="p-7 flex-1 overflow-y-auto">
+      <div className="page-body">
+        <div className="page-container">
         {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-4 mb-7">
+        <div className="grid grid-cols-1 gap-4 mb-7 sm:grid-cols-3">
           {[
             { label: 'Today', value: formatDuration(stats?.todaySeconds ?? 0) },
             { label: 'This Week', value: formatDuration(stats?.weekSeconds ?? 0) },
@@ -45,17 +46,17 @@ export default function DashboardPage() {
           ].map(({ label, value }) => (
             <div key={label} className="stat-card">
               <div className="text-xs text-white/40 mb-2">{label}</div>
-              <div className="text-2xl font-mono font-semibold text-white">{value}</div>
+              <div className="text-xl sm:text-2xl font-mono font-semibold text-white break-words">{value}</div>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-[1fr_260px] gap-5">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">
           {/* Bar chart */}
-          <div className="card p-5">
+          <div className="card p-4 sm:p-5">
             <h2 className="text-sm font-semibold text-white mb-5">Hours per Day (Last 7 Days)</h2>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData} barSize={30}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData} barSize={24}>
                 <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }} axisLine={false} tickLine={false} unit="h" />
                 <Tooltip
@@ -72,7 +73,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Projects breakdown */}
-          <div className="card p-5">
+          <div className="card p-4 sm:p-5">
             <h2 className="text-sm font-semibold text-white mb-4">Projects</h2>
             {projects.length === 0
               ? <p className="text-xs text-white/30">No projects yet</p>
@@ -80,12 +81,12 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   {projects.sort((a, b) => (b.totalSeconds ?? 0) - (a.totalSeconds ?? 0)).map(p => (
                     <div key={p.id}>
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="flex items-center gap-2">
+                      <div className="flex justify-between items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
-                          <span className="text-xs text-white truncate max-w-[110px]">{p.name}</span>
+                          <span className="text-xs text-white truncate">{p.name}</span>
                         </div>
-                        <span className="text-xs font-mono text-white/50">{formatDuration(p.totalSeconds ?? 0)}</span>
+                        <span className="text-xs font-mono text-white/50 whitespace-nowrap">{formatDuration(p.totalSeconds ?? 0)}</span>
                       </div>
                       <div className="h-1 rounded-full bg-white/5">
                         <div
@@ -101,20 +102,21 @@ export default function DashboardPage() {
         </div>
 
         {/* Weekly day cards */}
-        <div className="grid grid-cols-7 gap-2 mt-5">
+        <div className="grid grid-cols-2 gap-2 mt-5 min-[380px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-7">
           {(stats?.dailyTotals ?? []).map((d, i) => {
             const isToday = new Date(d.date + 'T00:00:00').getDay() === today
             const maxDay = Math.max(...(stats?.dailyTotals ?? []).map(x => x.seconds), 3600)
             return (
               <div key={d.date} className={`card p-3 ${isToday ? 'border-accent/30' : ''}`}>
                 <div className="text-[10px] text-white/40 mb-1">{days[new Date(d.date + 'T00:00:00').getDay()]}</div>
-                <div className="text-sm font-mono font-semibold text-white">{formatDuration(d.seconds)}</div>
+                <div className="text-sm font-mono font-semibold text-white break-words">{formatDuration(d.seconds)}</div>
                 <div className="h-1 rounded-full bg-white/5 mt-2">
                   <div className="h-1 rounded-full" style={{ width: `${Math.round(d.seconds / maxDay * 100)}%`, background: isToday ? '#34d399' : '#4f8ef7' }} />
                 </div>
               </div>
             )
           })}
+        </div>
         </div>
       </div>
     </AppShell>

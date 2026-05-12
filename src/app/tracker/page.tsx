@@ -39,60 +39,64 @@ export default function TrackerPage() {
   return (
     <AppShell>
       {/* Topbar */}
-      <div className="border-b border-white/[0.07] px-7 py-4 flex items-center justify-between bg-[rgb(var(--bg-secondary))]">
-        <div>
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Time Tracker</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <p className="text-xs text-white/40 mt-0.5 truncate">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setEditEntry(null)}>
+        <button className="btn-primary w-full sm:w-auto" onClick={() => setEditEntry(null)}>
           <Plus size={14} /> Add Entry
         </button>
       </div>
 
-      <div className="p-7 flex-1 overflow-y-auto">
-        <TimerBar projects={projects} runningEntry={runningEntry} />
-        <StatsRow stats={stats} />
+      <div className="page-body">
+        <div className="page-container">
+          <TimerBar projects={projects} runningEntry={runningEntry} />
+          <StatsRow stats={stats} />
 
-        {/* Running entry banner */}
-        {runningEntry && (
-          <div className="flex items-center gap-3 card px-4 py-3 mb-6 border-accent-green/30 bg-accent-green/5">
-            <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
-            <span className="text-sm text-white flex-1 truncate">{runningEntry.description || 'Timer running…'}</span>
-            {runningEntry.project && (
-              <span className="text-xs text-white/50 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: runningEntry.project.color }} />
-                {runningEntry.project.name}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Entries list */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[13.5px] font-semibold text-white">Time Entries</h2>
-          <span className="text-xs text-white/40">Total: {formatDuration(totalSecs)}</span>
-        </div>
-
-        {Object.keys(groups).length === 0 ? (
-          <div className="text-center py-20 text-white/30">
-            <div className="text-4xl mb-3">⏱</div>
-            <p className="text-sm">No entries yet — start the timer!</p>
-          </div>
-        ) : (
-          Object.entries(groups).map(([dateKey, dayEntries]) => (
-            <div key={dateKey} className="mb-6">
-              <div className="flex justify-between items-center mb-2 px-0.5">
-                <span className="text-[11.5px] font-medium text-white/40">{dateLabel(dateKey)}</span>
-                <span className="text-[11.5px] text-white/40">
-                  {formatDuration(dayEntries.reduce((s, e) => s + (e.duration ?? 0), 0))}
-                </span>
+          {/* Running entry banner */}
+          {runningEntry && (
+            <div className="flex flex-col gap-2 card px-4 py-3 mb-6 border-accent-green/30 bg-accent-green/5 sm:flex-row sm:items-center sm:gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse flex-shrink-0" />
+                <span className="text-sm text-white flex-1 truncate">{runningEntry.description || 'Timer running...'}</span>
               </div>
-              {dayEntries.map(e => <EntryRow key={e.id} entry={e} onEdit={setEditEntry} />)}
+              {runningEntry.project && (
+                <span className="text-xs text-white/50 flex items-center gap-1.5 sm:ml-auto">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: runningEntry.project.color }} />
+                  <span className="truncate">{runningEntry.project.name}</span>
+                </span>
+              )}
             </div>
-          ))
-        )}
+          )}
+
+          {/* Entries list */}
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h2 className="text-[13.5px] font-semibold text-white">Time Entries</h2>
+            <span className="text-xs text-white/40 whitespace-nowrap">Total: {formatDuration(totalSecs)}</span>
+          </div>
+
+          {Object.keys(groups).length === 0 ? (
+            <div className="text-center py-16 sm:py-20 text-white/30">
+              <div className="text-4xl mb-3">⏱</div>
+              <p className="text-sm">No entries yet - start the timer!</p>
+            </div>
+          ) : (
+            Object.entries(groups).map(([dateKey, dayEntries]) => (
+              <div key={dateKey} className="mb-6">
+                <div className="flex justify-between items-center gap-3 mb-2 px-0.5">
+                  <span className="text-[11.5px] font-medium text-white/40">{dateLabel(dateKey)}</span>
+                  <span className="text-[11.5px] text-white/40 whitespace-nowrap">
+                    {formatDuration(dayEntries.reduce((s, e) => s + (e.duration ?? 0), 0))}
+                  </span>
+                </div>
+                {dayEntries.map(e => <EntryRow key={e.id} entry={e} onEdit={setEditEntry} />)}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {editEntry !== undefined && (
