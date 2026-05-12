@@ -1,12 +1,12 @@
 // Prisma Schema for TrackFlow
-// Supports SQLite (dev) and PostgreSQL (production)
+// Provider: postgresql (production) — for local SQLite dev, change to "sqlite" below
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = env("DATABASE_PROVIDER") // "sqlite" or "postgresql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -60,7 +60,7 @@ model TimeEntry {
   description String?   @default("")
   startTime   DateTime
   endTime     DateTime?
-  duration    Int?      // seconds
+  duration    Int?
   isRunning   Boolean   @default(false)
   userId      String
   projectId   String?
