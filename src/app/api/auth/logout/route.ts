@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ok } from '@/lib/response'
 import { clearTokenCookie } from '@/lib/auth'
 
