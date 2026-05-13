@@ -46,7 +46,7 @@ prisma/
 
 ### 1. Install dependencies
 ```bash
-npm install
+bun install
 ```
 
 ### 2. Set up environment
@@ -57,13 +57,13 @@ cp .env.example .env.local
 
 ### 3. Set up database
 ```bash
-npm run db:push    # Create SQLite tables
-npm run db:seed    # Add demo data
+bun run db:push    # Create SQLite tables
+bun run db:seed    # Add demo data
 ```
 
 ### 4. Run the app
 ```bash
-npm run dev        # http://localhost:3000
+bun run dev        # http://localhost:3000
 ```
 
 **Demo login:** `demo@trackflow.com` / `password`
@@ -144,6 +144,7 @@ All endpoints are Next.js API routes under `/api/`. Auth uses **HttpOnly JWT coo
 | Layer | Tech |
 |-------|------|
 | Framework | Next.js 14 (App Router) |
+| Runtime / Package Manager | Bun |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
 | Database ORM | Prisma |
