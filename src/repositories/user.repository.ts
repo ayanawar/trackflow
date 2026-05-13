@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 
-const select = { id: true, name: true, email: true, workspace: true, createdAt: true }
+const select = { id: true, name: true, email: true, workspace: true, activeOrgId: true, createdAt: true }
 
 export async function findByEmail(email: string) {
   return prisma.user.findUnique({ where: { email } })

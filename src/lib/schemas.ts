@@ -60,3 +60,31 @@ export const aiQuerySchema = z.object({
 export const googleAuthSchema = z.object({
   idToken: z.string().min(1),
 })
+
+export const orgSchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/, 'Slug may only contain lowercase letters, numbers, and hyphens'),
+})
+
+export const orgUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  avatarUrl: z.string().url().nullable().optional(),
+})
+
+export const teamSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional().nullable(),
+})
+
+export const inviteSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).default('EMPLOYEE'),
+})
+
+export const memberRoleSchema = z.object({
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']),
+})
