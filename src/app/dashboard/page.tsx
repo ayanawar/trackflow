@@ -27,7 +27,7 @@ export default function DashboardPage() {
         <p className="text-xs text-white/40 mt-0.5">Weekly overview</p>
       </div>
 
-      <div className="p-7 flex-1 overflow-y-auto">
+      <div className="p-4 sm:p-7 flex-1 overflow-y-auto">
         <div className="grid grid-cols-3 gap-4 mb-7">
           {[
             { label: 'Today', value: formatDuration(stats?.todaySeconds ?? 0) },
@@ -41,7 +41,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-[1fr_260px] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5">
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-white mb-5">Hours per Day (Last 7 Days)</h2>
             <ResponsiveContainer width="100%" height={220}>
@@ -89,20 +89,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 mt-5">
-          {(stats?.dailyTotals ?? []).map((d) => {
-            const isToday = new Date(d.date + 'T00:00:00').getDay() === today
-            const maxDay = Math.max(...(stats?.dailyTotals ?? []).map(x => x.seconds), 3600)
-            return (
-              <div key={d.date} className={`card p-3 ${isToday ? 'border-accent/30' : ''}`}>
-                <div className="text-[10px] text-white/40 mb-1">{days[new Date(d.date + 'T00:00:00').getDay()]}</div>
-                <div className="text-sm font-mono font-semibold text-white break-words">{formatDuration(d.seconds)}</div>
-                <div className="h-1 rounded-full bg-white/5 mt-2">
-                  <div className="h-1 rounded-full" style={{ width: `${Math.round(d.seconds / maxDay * 100)}%`, background: isToday ? '#34d399' : '#4f8ef7' }} />
+        <div className="overflow-x-auto mt-5">
+          <div className="grid grid-cols-7 gap-2 min-w-[500px]">
+            {(stats?.dailyTotals ?? []).map((d) => {
+              const isToday = new Date(d.date + 'T00:00:00').getDay() === today
+              const maxDay = Math.max(...(stats?.dailyTotals ?? []).map(x => x.seconds), 3600)
+              return (
+                <div key={d.date} className={`card p-3 ${isToday ? 'border-accent/30' : ''}`}>
+                  <div className="text-[10px] text-white/40 mb-1">{days[new Date(d.date + 'T00:00:00').getDay()]}</div>
+                  <div className="text-sm font-mono font-semibold text-white break-words">{formatDuration(d.seconds)}</div>
+                  <div className="h-1 rounded-full bg-white/5 mt-2">
+                    <div className="h-1 rounded-full" style={{ width: `${Math.round(d.seconds / maxDay * 100)}%`, background: isToday ? '#34d399' : '#4f8ef7' }} />
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
     </AppShell>
