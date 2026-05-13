@@ -12,8 +12,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Allow public API routes (including /auth/me — it returns 401 itself if no token)
-  if (PUBLIC_API_PATHS.some(p => pathname.startsWith(p))) {
+  // Allow API routes to be proxied/handled by their respective logic
+  if (pathname.startsWith('/api/') || pathname.startsWith('/api-proxy/')) {
     return NextResponse.next()
   }
 
