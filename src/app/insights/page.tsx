@@ -1,12 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Send } from 'lucide-react'
+import { Sparkles, Send, Lock } from 'lucide-react'
 import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import SafeMarkdown from '@/components/ui/SafeMarkdown'
 import { useTimeEntries } from '@/hooks/useTimeEntries'
 import { useStats } from '@/hooks/useStats'
 import { useProjects } from '@/hooks/useProjects'
+import { useAuthStore } from '@/lib/authStore'
 
 const QUICK_PROMPTS = [
   'Summarize my time tracking this week',
@@ -17,10 +18,13 @@ const QUICK_PROMPTS = [
 ]
 
 export default function InsightsPage() {
+  const { user } = useAuthStore()
   const [question, setQuestion] = useState('')
   const [response, setResponse] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const canUseInsights = user?.role === 'ADMIN' || user?.role === 'MANAGER'
 
   const { data: entries = [] } = useTimeEntries(100)
   const { data: stats } = useStats()
@@ -62,6 +66,28 @@ export default function InsightsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!canUseInsights) {
+    return (
+      <AppShell>
+        <div className="page-header flex items-center gap-3">
+          <Sparkles size={15} className="text-accent-purple" />
+          <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
+        </div>
+        <div className="page-body flex items-center justify-center">
+          <div className="text-center max-w-sm px-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+              <Lock size={22} className="text-white/30" />
+            </div>
+            <h2 className="text-base font-semibold text-white mb-2">Manager &amp; Admin only</h2>
+            <p className="text-sm text-white/40">
+              AI Insights is available to Managers and Admins. Contact your workspace admin to request access.
+            </p>
+          </div>
+        </div>
+      </AppShell>
+    )
   }
 
   return (

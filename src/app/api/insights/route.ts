@@ -1,12 +1,15 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionFromRequest } from '@/lib/auth'
+import { getSessionFromRequest, requireRole } from '@/lib/auth'
 import { aiQuerySchema } from '@/lib/schemas'
 import { unauthorized, badRequest } from '@/lib/response'
 import { askAI, RateLimitError, ServiceUnavailableError } from '@/services/insights.service'
 
 export async function POST(req: NextRequest) {
+  const guard = await requireRole(['MANAGER', 'ADMIN'])(req)
+  if (guard) return guard
+
   const session = await getSessionFromRequest(req)
   if (!session) return unauthorized()
 

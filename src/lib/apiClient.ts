@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
+import { useAuthStore } from '@/lib/authStore'
 
 const api = axios.create({
   baseURL: '/api',
@@ -6,15 +7,46 @@ const api = axios.create({
   withCredentials: true,
 })
 
+let isRefreshing = false
+let failedQueue: Array<{ resolve: () => void; reject: (err: unknown) => void }> = []
+
+function processQueue(error: unknown) {
+  failedQueue.forEach(p => (error ? p.reject(error) : p.resolve()))
+  failedQueue = []
+}
+
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
+    const originalRequest = err.config as AxiosRequestConfig & { _retry?: boolean }
     const status = err.response?.status
-    const url = err.config?.url ?? ''
+    const url = originalRequest?.url ?? ''
 
-    // Only redirect on 401 for protected routes — not for the bootstrap /auth/me check
-    if (status === 401 && typeof window !== 'undefined' && !url.includes('/auth/me') && !url.includes('/auth/login')) {
-      window.location.href = '/auth/login'
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') ||
+      url.includes('/auth/refresh') || url.includes('/auth/me')
+
+    if (status === 401 && !originalRequest._retry && !isAuthEndpoint && typeof window !== 'undefined') {
+      if (isRefreshing) {
+        return new Promise<void>((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then(() => api(originalRequest)).catch(() => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        await api.post('/auth/refresh')
+        processQueue(null)
+        return api(originalRequest)
+      } catch (refreshErr) {
+        processQueue(refreshErr)
+        useAuthStore.getState().setUser(null)
+        window.location.href = '/auth/login'
+        return Promise.reject(refreshErr)
+      } finally {
+        isRefreshing = false
+      }
     }
 
     return Promise.reject(err)

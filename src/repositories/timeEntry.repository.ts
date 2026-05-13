@@ -1,4 +1,6 @@
 import prisma from '@/lib/prisma'
+import { timeEntryAccessWhere } from '@/services/authorization.service'
+import type { Role } from '@/types'
 
 const include = { project: true, tag: true } as const
 
@@ -11,10 +13,25 @@ export async function findAllByUser(userId: string, limit = 100) {
   })
 }
 
+export async function findAllAccessible(user: { userId: string; role: Role }, limit = 100) {
+  const where = await timeEntryAccessWhere(user)
+  return prisma.timeEntry.findMany({
+    where,
+    orderBy: { startTime: 'desc' },
+    take: Math.min(limit, 500),
+    include,
+  })
+}
+
 export async function findEntryById(id: string, userId: string) {
   const e = await prisma.timeEntry.findUnique({ where: { id }, include })
   if (!e || e.userId !== userId) return null
   return e
+}
+
+export async function findAccessibleEntryById(id: string, user: { userId: string; role: Role }) {
+  const where = await timeEntryAccessWhere(user)
+  return prisma.timeEntry.findFirst({ where: { AND: [{ id }, where] }, include })
 }
 
 export async function findRunning(userId: string) {
@@ -54,6 +71,25 @@ export async function updateEntry(
   }
 ) {
   return prisma.timeEntry.update({ where: { id, userId }, data, include })
+}
+
+export async function updateEntryById(
+  id: string,
+  data: {
+    description?: string
+    projectId?: string | null
+    tagId?: string | null
+    taskId?: string | null
+    startTime?: Date
+    endTime?: Date | null
+    duration?: number | null
+    isRunning?: boolean
+    isPaused?: boolean
+    pausedDuration?: number
+    billable?: boolean
+  }
+) {
+  return prisma.timeEntry.update({ where: { id }, data, include })
 }
 
 export async function stopRunning(userId: string, endTime: Date) {
@@ -97,4 +133,8 @@ export async function findActiveByUser(userId: string) {
 
 export async function deleteEntry(id: string, userId: string) {
   return prisma.timeEntry.delete({ where: { id, userId } })
+}
+
+export async function deleteEntryById(id: string) {
+  return prisma.timeEntry.delete({ where: { id } })
 }

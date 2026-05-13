@@ -24,6 +24,10 @@ export function forbidden(message = 'Forbidden') {
   return NextResponse.json({ error: message }, { status: 403 })
 }
 
+export function tooManyRequests(message = 'Too many requests') {
+  return NextResponse.json({ error: message }, { status: 429 })
+}
+
 export function notFound(message = 'Not found') {
   return NextResponse.json({ error: message }, { status: 404 })
 }

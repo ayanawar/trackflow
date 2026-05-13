@@ -8,6 +8,7 @@ import { Clock } from 'lucide-react'
 import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
+import AuthPageGuard from '@/components/auth/AuthPageGuard'
 
 interface FormData { name: string; email: string; password: string; workspace: string }
 
@@ -19,16 +20,23 @@ export default function RegisterPage() {
 
   const mutation = useMutation({
     mutationFn: (data: FormData) => api.post('/auth/register', data),
-    onSuccess: ({ data }) => { setUser(data.user); router.push('/tracker') },
+    onSuccess: ({ data }) => {
+      setUser(data.user)
+      router.push(data.user.role === 'ADMIN' ? '/admin/users' : '/tracker')
+    },
   })
 
   const googleMutation = useMutation({
     mutationFn: (idToken: string) => api.post('/auth/google', { idToken }),
-    onSuccess: ({ data }) => { setUser(data.user); router.push('/tracker') },
+    onSuccess: ({ data }) => {
+      setUser(data.user)
+      router.push(data.user.role === 'ADMIN' ? '/admin/users' : '/tracker')
+    },
     onError: (err: any) => setGoogleError(err.response?.data?.error ?? 'Google sign-in failed. Please try again.'),
   })
 
   return (
+    <AuthPageGuard>
     <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--bg-primary))] px-4 py-8">
       <div className="w-full max-w-[min(24rem,calc(100vw-2rem))]">
         <div className="flex items-center gap-2.5 justify-center mb-8">
@@ -90,5 +98,6 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    </AuthPageGuard>
   )
 }

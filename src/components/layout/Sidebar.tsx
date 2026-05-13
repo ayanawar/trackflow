@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, ShieldCheck, Users, Building2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 
@@ -15,12 +15,19 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, logout } = useAuthStore()
+  const { user, isLoading, logout } = useAuthStore()
 
   const initials = user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() ?? 'U'
   const mobileItems = [
     ...navItems,
-    { href: '/insights', icon: Sparkles, label: 'AI' },
+    ...(!isLoading && (user?.role === 'ADMIN' || user?.role === 'MANAGER')
+      ? [{ href: '/insights', icon: Sparkles, label: 'AI' }]
+      : []),
+    ...(!isLoading && user?.role === 'ADMIN' ? [
+      { href: '/admin/users', icon: ShieldCheck, label: 'Users' },
+      { href: '/admin/teams', icon: Users, label: 'Teams' },
+      { href: '/admin/clients', icon: Building2, label: 'Clients' },
+    ] : []),
     { href: '/settings', icon: Settings, label: 'Settings' },
   ]
 
@@ -52,7 +59,10 @@ export default function Sidebar() {
         </div>
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-white/[0.08] bg-[rgb(var(--bg-secondary))]/95 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden">
+      <nav className={cn(
+        'fixed inset-x-0 bottom-0 z-40 grid border-t border-white/[0.08] bg-[rgb(var(--bg-secondary))]/95 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden',
+        mobileItems.length <= 5 ? 'grid-cols-5' : mobileItems.length === 6 ? 'grid-cols-6' : 'grid-cols-7'
+      )}>
         {mobileItems.map(({ href, icon: Icon, label }) => {
           const active = href === '/tracker' || href === '/dashboard' || href === '/reports' || href === '/projects'
             ? pathname.startsWith(href)
@@ -80,10 +90,28 @@ export default function Sidebar() {
               <Icon size={15} />{label}
             </Link>
           ))}
-          <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">AI</div>
-          <Link href="/insights" className={cn('nav-link', pathname === '/insights' && 'active')}>
-            <Sparkles size={15} />AI Insights
-          </Link>
+          {!isLoading && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+            <>
+              <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">AI</div>
+              <Link href="/insights" className={cn('nav-link', pathname === '/insights' && 'active')}>
+                <Sparkles size={15} />AI Insights
+              </Link>
+            </>
+          )}
+          {!isLoading && user?.role === 'ADMIN' && (
+            <>
+              <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">Admin</div>
+              <Link href="/admin/users" className={cn('nav-link', pathname.startsWith('/admin/users') && 'active')}>
+                <ShieldCheck size={15} />User Management
+              </Link>
+              <Link href="/admin/teams" className={cn('nav-link', pathname.startsWith('/admin/teams') && 'active')}>
+                <Users size={15} />Teams
+              </Link>
+              <Link href="/admin/clients" className={cn('nav-link', pathname.startsWith('/admin/clients') && 'active')}>
+                <Building2 size={15} />Clients
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="border-t border-white/[0.07] p-2">

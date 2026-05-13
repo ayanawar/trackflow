@@ -5,6 +5,7 @@ import { Download, Filter } from 'lucide-react'
 import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import { formatDuration, formatTimeRange } from '@/lib/utils'
+import { useAuthStore } from '@/lib/authStore'
 import type { TimeEntry, Project } from '@/types'
 
 type Range = '7' | '30' | '90'
@@ -12,6 +13,7 @@ type Range = '7' | '30' | '90'
 export default function ReportsPage() {
   const [range, setRange] = useState<Range>('7')
   const [projectFilter, setProjectFilter] = useState('')
+  const { user } = useAuthStore()
 
   const { data: entries = [] } = useQuery<TimeEntry[]>({
     queryKey: ['timeEntries', 'all'],
@@ -33,6 +35,11 @@ export default function ReportsPage() {
   })
 
   const totalSecs = filtered.reduce((s, e) => s + (e.duration ?? 0), 0)
+  const scopeLabel = user?.role === 'ADMIN'
+    ? 'All workspace entries'
+    : user?.role === 'MANAGER'
+      ? 'Assigned team and project entries'
+      : 'Your entries'
 
   // Group by project for summary
   const byProject: Record<string, { project: Project | null; seconds: number; count: number }> = {}
@@ -66,7 +73,7 @@ export default function ReportsPage() {
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Reports</h1>
-          <p className="text-xs text-white/40 mt-0.5">{filtered.length} entries · {formatDuration(totalSecs)}</p>
+          <p className="text-xs text-white/40 mt-0.5">{scopeLabel} · {filtered.length} entries · {formatDuration(totalSecs)}</p>
         </div>
         <button className="btn-primary w-full sm:w-auto" onClick={exportCSV}><Download size={14} /> Export CSV</button>
       </div>
