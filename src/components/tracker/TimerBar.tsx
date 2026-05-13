@@ -116,6 +116,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
 
   const isBusy = startMutation.isPending || stopMutation.isPending || pauseMutation.isPending || resumeMutation.isPending
   const activeProject = projects.find(p => p.id === projectId)
+  const canStart = !!projectId
 
   return (
     <div className="card flex flex-col gap-3 px-4 py-3.5 mb-7 md:flex-row md:items-center">
@@ -125,7 +126,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
           placeholder={isListening ? 'Listening…' : 'What are you working on?'}
           value={description}
           onChange={e => setDescription(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !isActive && startMutation.mutate()}
+          onKeyDown={e => e.key === 'Enter' && !isActive && canStart && startMutation.mutate()}
           disabled={isActive}
         />
         {speechSupported && !isActive && (
@@ -148,12 +149,17 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       {/* Project picker */}
       <div className="relative w-full md:w-auto">
         <button
-          className="flex min-h-9 w-full items-center justify-center gap-1.5 truncate px-2.5 py-1.5 rounded-lg text-xs text-white/50 bg-white/5 border border-white/10 hover:border-white/20 transition-all md:w-auto"
+          className={cn(
+            'flex min-h-9 w-full items-center justify-center gap-1.5 truncate px-2.5 py-1.5 rounded-lg text-xs bg-white/5 border transition-all md:w-auto',
+            activeProject
+              ? 'text-white/70 border-white/10 hover:border-white/20'
+              : 'text-white/50 border-orange-500/40 hover:border-orange-500/60'
+          )}
           onClick={() => !isActive && setShowProjects(v => !v)}
         >
           {activeProject
             ? <><span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: activeProject.color }} /><span className="truncate">{activeProject.name}</span></>
-            : <><Folder size={11} />Project</>}
+            : <><Folder size={11} /><span>Project <span className="text-orange-400">*</span></span></>}
         </button>
         {showProjects && (
           <div className="absolute top-full left-0 mt-1 w-full min-w-48 bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-xl p-1 z-30 shadow-xl md:w-48">
@@ -214,10 +220,15 @@ export default function TimerBar({ projects, runningEntry }: Props) {
         {/* Start / Stop */}
         <button
           onClick={() => isActive ? stopMutation.mutate() : startMutation.mutate()}
-          disabled={isBusy}
+          disabled={isBusy || (!isActive && !canStart)}
+          title={!isActive && !canStart ? 'Select a project first' : undefined}
           className={cn(
-            'flex-1 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all hover:brightness-110 active:scale-95 md:flex-none md:w-10',
-            isActive ? 'bg-accent-red' : 'bg-accent-green'
+            'flex-1 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all active:scale-95 md:flex-none md:w-10',
+            isActive
+              ? 'bg-accent-red hover:brightness-110'
+              : canStart
+                ? 'bg-accent-green hover:brightness-110'
+                : 'bg-white/10 cursor-not-allowed opacity-50'
           )}
         >
           {isActive

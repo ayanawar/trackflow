@@ -58,6 +58,6 @@ export async function getMe(userId: string) {
   return userRepo.findById(userId)
 }
 
-export async function updateMe(userId: string, data: { name?: string; workspace?: string }) {
+export async function updateMe(userId: string, data: { name?: string; workspace?: string; dailyHoursGoal?: number }) {
   return userRepo.updateUser(userId, data)
 }

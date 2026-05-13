@@ -4,10 +4,13 @@ import AppShell from '@/components/layout/AppShell'
 import { formatDuration } from '@/lib/utils'
 import { useStats } from '@/hooks/useStats'
 import { useProjects } from '@/hooks/useProjects'
+import { useAuthStore } from '@/lib/authStore'
 
 export default function DashboardPage() {
   const { data: stats } = useStats()
   const { data: projects = [] } = useProjects()
+  const { user } = useAuthStore()
+  const dailyGoal = user?.dailyHoursGoal ?? 8
 
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const today = new Date().getDay()
@@ -30,9 +33,9 @@ export default function DashboardPage() {
       <div className="p-4 sm:p-7 flex-1 overflow-y-auto">
         <div className="grid grid-cols-3 gap-4 mb-7">
           {[
-            { label: 'Today', value: formatDuration(stats?.todaySeconds ?? 0) },
-            { label: 'This Week', value: formatDuration(stats?.weekSeconds ?? 0) },
-            { label: 'This Month', value: formatDuration(stats?.monthSeconds ?? 0) },
+            { label: `Today / ${dailyGoal}h`, value: formatDuration(stats?.todaySeconds ?? 0) },
+            { label: `This Week / ${dailyGoal * 5}h`, value: formatDuration(stats?.weekSeconds ?? 0) },
+            { label: `This Month / ${dailyGoal * 22}h`, value: formatDuration(stats?.monthSeconds ?? 0) },
           ].map(({ label, value }) => (
             <div key={label} className="stat-card">
               <div className="text-xs text-white/40 mb-2">{label}</div>

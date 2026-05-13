@@ -6,6 +6,7 @@ export interface AuthUser {
   name: string
   email: string
   workspace: string
+  dailyHoursGoal: number
   avatarUrl?: string | null
 }
 

@@ -17,7 +17,8 @@ model User {
   password  String?
   googleId  String?  @unique
   avatarUrl String?
-  workspace String   @default("My Workspace")
+  workspace      String @default("My Workspace")
+  dailyHoursGoal Int    @default(8)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
