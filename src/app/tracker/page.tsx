@@ -446,7 +446,7 @@ export default function TrackerPage() {
 
             {!isOver40h && (
               <p className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 mb-4">
-                You haven't reached {weekHoursLabel} yet. You can still submit, but consider adding more entries first.
+                You haven&apos;t reached {weekHoursLabel} yet. You can still submit, but consider adding more entries first.
               </p>
             )}
 
