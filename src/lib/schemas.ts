@@ -52,3 +52,7 @@ export const aiQuerySchema = z.object({
   question: z.string().min(1).max(500),
   context: z.object({}).passthrough(),
 })
+
+export const googleAuthSchema = z.object({
+  idToken: z.string().min(1),
+})

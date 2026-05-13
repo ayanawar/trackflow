@@ -22,3 +22,21 @@ export async function createUser(data: {
 export async function updateUser(id: string, data: { name?: string; workspace?: string }) {
   return prisma.user.update({ where: { id }, data, select })
 }
+
+const googleSelect = { ...select, avatarUrl: true }
+
+export async function findByGoogleId(googleId: string) {
+  return prisma.user.findUnique({ where: { googleId }, select: googleSelect })
+}
+
+export async function createGoogleUser(data: {
+  googleId: string
+  email: string
+  name: string
+  avatarUrl: string | null
+}) {
+  return prisma.user.create({
+    data: { ...data, password: null, workspace: 'My Workspace' },
+    select: googleSelect,
+  })
+}
