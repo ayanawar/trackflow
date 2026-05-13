@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read:
-specs/003-fix-dashboard-mobile/plan.md
+specs/004-google-oauth-signin/plan.md
 <!-- SPECKIT END -->

@@ -1,0 +1,34 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - generic [ref=e9]: TrackFlow
+    - generic [ref=e10]:
+      - heading "Create account" [level=1] [ref=e11]
+      - paragraph [ref=e12]: Free forever, no credit card
+      - generic [ref=e15]:
+        - button "المواصلة باستخدام Googleيفتح الرابط في علامة تبويب جديدة" [ref=e17] [cursor=pointer]:
+          - generic [ref=e19]:
+            - img [ref=e22]
+            - generic [ref=e29]: المواصلة باستخدام Google
+        - iframe
+      - generic [ref=e34]: or
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]: Full name
+          - textbox "John Doe" [ref=e38]
+        - generic [ref=e39]:
+          - generic [ref=e40]: Workspace name
+          - textbox "My Company" [ref=e41]
+        - generic [ref=e42]:
+          - generic [ref=e43]: Email
+          - textbox "you@example.com" [ref=e44]
+        - generic [ref=e45]:
+          - generic [ref=e46]: Password
+          - textbox "Min 8 characters" [ref=e47]
+        - button "Create account" [ref=e48] [cursor=pointer]
+      - paragraph [ref=e49]:
+        - text: Already have an account?
+        - link "Sign in" [ref=e50] [cursor=pointer]:
+          - /url: /auth/login
+  - alert [ref=e51]
