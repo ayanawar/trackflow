@@ -66,63 +66,65 @@ export default function InsightsPage() {
 
   return (
     <AppShell>
-      <div className="border-b border-white/[0.07] px-7 py-4 flex items-center gap-3 bg-[rgb(var(--bg-secondary))]">
+      <div className="page-header flex items-center gap-3">
         <Sparkles size={15} className="text-accent-purple" />
-        <div>
+        <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
           <p className="text-xs text-white/40 mt-0.5">Powered by Claude</p>
         </div>
       </div>
 
-      <div className="p-7 max-w-3xl flex-1 overflow-y-auto">
-        <div className="card p-5 mb-6">
-          <div className="flex gap-3">
-            <input
-              className="input flex-1"
-              placeholder="Ask about your time data…"
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && ask(question)}
-            />
-            <button className="btn-primary flex-shrink-0" onClick={() => ask(question)} disabled={loading}>
-              <Send size={14} />{loading ? 'Thinking…' : 'Ask'}
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {QUICK_PROMPTS.map(p => (
-              <button key={p}
-                className="text-[12px] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-accent-purple hover:border-accent-purple/40 transition-all"
-                onClick={() => { setQuestion(p); ask(p) }}>
-                {p}
+      <div className="page-body">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="card p-4 sm:p-5 mb-6">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                className="input flex-1"
+                placeholder="Ask about your time data…"
+                value={question}
+                onChange={e => setQuestion(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && ask(question)}
+              />
+              <button className="btn-primary flex-shrink-0 w-full sm:w-auto" onClick={() => ask(question)} disabled={loading}>
+                <Send size={14} />{loading ? 'Thinking…' : 'Ask'}
               </button>
-            ))}
-          </div>
-        </div>
-
-        {errorMsg && (
-          <div className="card p-5 border-l-2 border-accent-red">
-            <p className="text-sm text-accent-red">{errorMsg}</p>
-          </div>
-        )}
-
-        {(response || loading) && !errorMsg && (
-          <div className="card p-5 border-l-2 border-accent-purple">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={13} className="text-accent-purple" />
-              <span className="text-xs font-medium text-accent-purple">Claude</span>
             </div>
-            {loading ? (
-              <div className="flex items-center gap-2 text-white/40 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-pulse" />
-                Analyzing your data…
-              </div>
-            ) : (
-              <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
-                <SafeMarkdown text={response} />
-              </p>
-            )}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {QUICK_PROMPTS.map(p => (
+                <button key={p}
+                  className="text-[12px] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-accent-purple hover:border-accent-purple/40 transition-all"
+                  onClick={() => { setQuestion(p); ask(p) }}>
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
+
+          {errorMsg && (
+            <div className="card p-5 border-l-2 border-accent-red">
+              <p className="text-sm text-accent-red">{errorMsg}</p>
+            </div>
+          )}
+
+          {(response || loading) && !errorMsg && (
+            <div className="card p-5 border-l-2 border-accent-purple">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={13} className="text-accent-purple" />
+                <span className="text-xs font-medium text-accent-purple">Claude</span>
+              </div>
+              {loading ? (
+                <div className="flex items-center gap-2 text-white/40 text-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-pulse" />
+                  Analyzing your data…
+                </div>
+              ) : (
+                <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                  <SafeMarkdown text={response} />
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </AppShell>
   )

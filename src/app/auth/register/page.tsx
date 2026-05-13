@@ -20,8 +20,8 @@ export default function RegisterPage() {
   })
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--bg-primary))] px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--bg-primary))] px-4 py-8">
+      <div className="w-full max-w-[min(24rem,calc(100vw-2rem))]">
         <div className="flex items-center gap-2.5 justify-center mb-8">
           <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center">
             <Clock size={16} className="text-white" />
@@ -29,7 +29,7 @@ export default function RegisterPage() {
           <span className="text-xl font-semibold tracking-tight text-white">TrackFlow</span>
         </div>
 
-        <div className="card p-7">
+        <div className="card p-5 sm:p-7">
           <h1 className="text-lg font-semibold text-white mb-1">Create account</h1>
           <p className="text-sm text-white/40 mb-6">Free forever, no credit card</p>
 

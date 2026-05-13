@@ -63,27 +63,28 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <div className="border-b border-white/[0.07] px-7 py-4 flex items-center justify-between bg-[rgb(var(--bg-secondary))]">
-        <div>
+      <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Reports</h1>
           <p className="text-xs text-white/40 mt-0.5">{filtered.length} entries · {formatDuration(totalSecs)}</p>
         </div>
-        <button className="btn-primary" onClick={exportCSV}><Download size={14} /> Export CSV</button>
+        <button className="btn-primary w-full sm:w-auto" onClick={exportCSV}><Download size={14} /> Export CSV</button>
       </div>
 
-      <div className="p-7 flex-1 overflow-y-auto">
+      <div className="page-body">
+        <div className="page-container">
         {/* Filters */}
-        <div className="flex items-center gap-3 mb-7 flex-wrap">
+        <div className="flex items-stretch gap-3 mb-7 flex-col sm:flex-row sm:items-center sm:flex-wrap">
           <Filter size={13} className="text-white/40" />
-          <div className="flex gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5 sm:flex">
             {(['7', '30', '90'] as Range[]).map(r => (
               <button key={r} onClick={() => setRange(r)}
-                className={`px-3 py-1.5 rounded-lg text-xs transition-all ${range === r ? 'bg-accent text-white' : 'bg-white/5 text-white/50 hover:text-white border border-white/10'}`}>
+                className={`min-h-9 px-3 py-1.5 rounded-lg text-xs transition-all ${range === r ? 'bg-accent text-white' : 'bg-white/5 text-white/50 hover:text-white border border-white/10'}`}>
                 Last {r} days
               </button>
             ))}
           </div>
-          <select className="input w-44 py-1.5 text-xs" value={projectFilter} onChange={e => setProjectFilter(e.target.value)}>
+          <select className="input w-full py-1.5 text-xs sm:w-44" value={projectFilter} onChange={e => setProjectFilter(e.target.value)}>
             <option value="">All projects</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -91,14 +92,14 @@ export default function ReportsPage() {
 
         {/* Summary cards */}
         {Object.values(byProject).length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+          <div className="grid grid-cols-1 gap-4 mb-7 md:grid-cols-3">
             {Object.values(byProject).sort((a, b) => b.seconds - a.seconds).map(({ project, seconds, count }) => (
               <div key={project?.id ?? 'none'} className="stat-card">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: project?.color ?? '#555' }} />
                   <span className="text-xs text-white/60 truncate">{project?.name ?? 'No project'}</span>
                 </div>
-                <div className="text-2xl font-mono font-semibold text-white">{formatDuration(seconds)}</div>
+                <div className="text-xl sm:text-2xl font-mono font-semibold text-white break-words">{formatDuration(seconds)}</div>
                 <div className="text-xs text-white/30 mt-1">{count} entries</div>
               </div>
             ))}
@@ -107,7 +108,8 @@ export default function ReportsPage() {
 
         {/* Table */}
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="table-scroll">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-white/[0.07]">
                 {['Description', 'Project', 'Tag', 'Time Range', 'Duration'].map(h => (
@@ -123,7 +125,7 @@ export default function ReportsPage() {
                   <td className="px-4 py-3 text-white max-w-[200px] truncate">{e.description || '—'}</td>
                   <td className="px-4 py-3">
                     {e.project
-                      ? <span className="flex items-center gap-1.5 text-white/60"><span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: e.project.color }} />{e.project.name}</span>
+                      ? <span className="flex items-center gap-1.5 text-white/60"><span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: e.project.color }} /><span className="truncate">{e.project.name}</span></span>
                       : <span className="text-white/30">—</span>}
                   </td>
                   <td className="px-4 py-3">
@@ -137,6 +139,8 @@ export default function ReportsPage() {
               ))}
             </tbody>
           </table>
+          </div>
+        </div>
         </div>
       </div>
     </AppShell>

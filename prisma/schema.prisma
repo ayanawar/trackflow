@@ -1,12 +1,12 @@
 // Prisma Schema for TrackFlow
-// Provider: postgresql (production) — for local SQLite dev, change to "sqlite" below
+// Provider: sqlite (local development)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 

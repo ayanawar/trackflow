@@ -54,9 +54,9 @@ export default function TimerBar({ projects, runningEntry }: Props) {
   const activeProject = projects.find(p => p.id === projectId)
 
   return (
-    <div className="card flex items-center gap-3 px-4 py-3.5 mb-7">
+    <div className="card flex flex-col gap-3 px-4 py-3.5 mb-7 md:flex-row md:items-center">
       <input
-        className="flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30"
+        className="min-h-10 w-full flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30"
         placeholder="What are you working on?"
         value={description}
         onChange={e => setDescription(e.target.value)}
@@ -64,21 +64,21 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       />
 
       {/* Project picker */}
-      <div className="relative">
+      <div className="relative w-full md:w-auto">
         <button
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-white/50 bg-white/5 border border-white/10 hover:border-white/20 transition-all"
+          className="flex min-h-9 w-full items-center justify-center gap-1.5 truncate px-2.5 py-1.5 rounded-lg text-xs text-white/50 bg-white/5 border border-white/10 hover:border-white/20 transition-all md:w-auto"
           onClick={() => setShowProjects(v => !v)}
         >
           {activeProject
-            ? <><span className="w-2 h-2 rounded-full" style={{ background: activeProject.color }} />{activeProject.name}</>
+            ? <><span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: activeProject.color }} /><span className="truncate">{activeProject.name}</span></>
             : <><Folder size={11} />Project</>}
         </button>
         {showProjects && (
-          <div className="absolute top-full left-0 mt-1 w-48 bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-xl p-1 z-30 shadow-xl">
+          <div className="absolute top-full left-0 mt-1 w-full min-w-48 bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-xl p-1 z-30 shadow-xl md:w-48">
             <button className="w-full text-left text-xs px-3 py-2 rounded-lg text-white/50 hover:bg-white/5 hover:text-white" onClick={() => { setProjectId(null); setShowProjects(false) }}>No project</button>
             {projects.map(p => (
               <button key={p.id} className="w-full text-left text-xs px-3 py-2 rounded-lg text-white hover:bg-white/5 flex items-center gap-2" onClick={() => { setProjectId(p.id); setShowProjects(false) }}>
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />{p.name}
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} /><span className="truncate">{p.name}</span>
               </button>
             ))}
           </div>
@@ -88,16 +88,16 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       {/* Tag */}
       <TagInput value={tag} onSelect={setTag} />
 
-      <div className="w-px h-6 bg-white/[0.07]" />
+      <div className="hidden w-px h-6 bg-white/[0.07] md:block" />
 
-      <span className={cn('font-mono text-xl font-medium min-w-[90px] text-right tabular-nums', isRunning ? 'text-accent-green' : 'text-white/60')}>
+      <span className={cn('w-full font-mono text-xl font-medium text-center tabular-nums md:w-auto md:min-w-[90px] md:text-right', isRunning ? 'text-accent-green' : 'text-white/60')}>
         {formatSeconds(elapsed)}
       </span>
 
       <button
         onClick={handleToggle}
         disabled={startMutation.isPending || stopMutation.isPending}
-        className={cn('w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all hover:brightness-110 active:scale-95', isRunning ? 'bg-accent-red' : 'bg-accent-green')}
+        className={cn('w-full h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all hover:brightness-110 active:scale-95 md:w-10', isRunning ? 'bg-accent-red' : 'bg-accent-green')}
       >
         {isRunning
           ? <Square size={14} fill="white" className="text-white" />
