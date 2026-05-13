@@ -13,7 +13,9 @@ export async function getEntry(id: string, userId: string) {
 export async function createEntry(userId: string, data: {
   description?: string
   projectId?: string | null
+  taskId?: string | null
   tag?: string | null
+  billable?: boolean
   startTime: string
   endTime?: string | null
 }) {
@@ -33,12 +35,14 @@ export async function createEntry(userId: string, data: {
   const entry = await entryRepo.createEntry({
     description: data.description ?? '',
     projectId: data.projectId ?? null,
+    taskId: data.taskId ?? null,
     tagId,
     userId,
     startTime: start,
     endTime: end,
     duration,
     isRunning,
+    billable: data.billable ?? false,
   })
 
   invalidateStatsCache(userId)
@@ -60,7 +64,9 @@ export async function stopEntry(id: string, userId: string, endTime?: Date) {
 export async function updateEntry(id: string, userId: string, data: {
   description?: string
   projectId?: string | null
+  taskId?: string | null
   tag?: string | null
+  billable?: boolean
   startTime?: string
   endTime?: string | null
 }) {
@@ -81,18 +87,47 @@ export async function updateEntry(id: string, userId: string, data: {
   const end = data.endTime !== undefined
     ? (data.endTime ? new Date(data.endTime) : null)
     : entry.endTime
-  const duration = end ? Math.floor((end.getTime() - start.getTime()) / 1000) : null
+  const duration = end
+    ? Math.floor((end.getTime() - start.getTime()) / 1000) + entry.pausedDuration
+    : null
 
   const updated = await entryRepo.updateEntry(id, userId, {
     ...(data.description !== undefined && { description: data.description }),
     ...(data.projectId !== undefined && { projectId: data.projectId ?? null }),
+    ...(data.taskId !== undefined && { taskId: data.taskId ?? null }),
+    ...(data.billable !== undefined && { billable: data.billable }),
     tagId,
     startTime: start,
     endTime: end,
     duration,
-    isRunning: !end,
+    isRunning: !end && !entry.isPaused,
   })
 
+  invalidateStatsCache(userId)
+  return updated
+}
+
+export async function pauseEntry(id: string, userId: string) {
+  const entry = await entryRepo.findEntryById(id, userId)
+  if (!entry || !entry.isRunning) return null
+
+  const now = new Date()
+  const elapsed = Math.floor((now.getTime() - new Date(entry.startTime).getTime()) / 1000)
+  const pausedDuration = entry.pausedDuration + elapsed
+
+  const updated = await entryRepo.pauseOne(id, userId, pausedDuration)
+  invalidateStatsCache(userId)
+  return updated
+}
+
+export async function resumeEntry(id: string, userId: string) {
+  const entry = await entryRepo.findEntryById(id, userId)
+  if (!entry || !entry.isPaused) return null
+
+  // Stop any other running timer first
+  await entryRepo.stopRunning(userId, new Date())
+
+  const updated = await entryRepo.resumeOne(id, userId, new Date())
   invalidateStatsCache(userId)
   return updated
 }

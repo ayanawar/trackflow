@@ -31,10 +31,14 @@ export interface TimeEntry {
   project?: Project | null
   tagId: string | null
   tag?: Tag | null
+  taskId: string | null
   startTime: string
   endTime: string | null
   duration: number | null
   isRunning: boolean
+  isPaused: boolean
+  pausedDuration: number
+  billable: boolean
   userId: string
   createdAt: string
 }

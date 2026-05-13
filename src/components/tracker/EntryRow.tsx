@@ -1,5 +1,5 @@
 'use client'
-import { Play, Trash2, Pencil } from 'lucide-react'
+import { Play, Trash2, Pencil, DollarSign } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/apiClient'
 import { formatDuration, formatTimeRange } from '@/lib/utils'
@@ -27,7 +27,9 @@ export default function EntryRow({ entry, onEdit }: Props) {
     mutationFn: () => api.post('/time-entries', {
       description: entry.description,
       projectId: entry.projectId,
+      taskId: entry.taskId,
       tag: entry.tag?.name ?? null,
+      billable: entry.billable,
       startTime: new Date().toISOString(),
     }),
     onSuccess: invalidate,
@@ -41,6 +43,12 @@ export default function EntryRow({ entry, onEdit }: Props) {
         <p className="text-sm text-white truncate">{entry.description || <span className="text-white/30 italic">No description</span>}</p>
         {entry.project && <p className="text-xs text-white/40 mt-0.5 truncate">{entry.project.name}{entry.project.client ? ` · ${entry.project.client}` : ''}</p>}
       </div>
+
+      {entry.billable && (
+        <span title="Billable" className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex-shrink-0">
+          <DollarSign size={10} />
+        </span>
+      )}
 
       {entry.tag && (
         <span className="max-w-[45%] truncate text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50 flex-shrink-0 sm:max-w-[120px]">{entry.tag.name}</span>

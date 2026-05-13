@@ -21,7 +21,9 @@ export const projectSchema = z.object({
 export const timeEntrySchema = z.object({
   description: z.string().max(500).optional().default(''),
   projectId: z.string().nullable().optional(),
+  taskId: z.string().max(200).nullable().optional(),
   tag: z.string().max(50).nullable().optional(),
+  billable: z.boolean().optional().default(false),
   startTime: z.string().datetime(),
   endTime: z.string().datetime().nullable().optional(),
 })
@@ -29,7 +31,9 @@ export const timeEntrySchema = z.object({
 export const timeEntryUpdateSchema = z.object({
   description: z.string().max(500).optional(),
   projectId: z.string().nullable().optional(),
+  taskId: z.string().max(200).nullable().optional(),
   tag: z.string().max(50).nullable().optional(),
+  billable: z.boolean().optional(),
   startTime: z.string().datetime().optional(),
   endTime: z.string().datetime().nullable().optional(),
 })
