@@ -26,7 +26,7 @@ interface Props {
 
 export default function EntryModal({ entry, projects, onClose }: Props) {
   const qc = useQueryClient()
-  const { register, handleSubmit, reset, watch, setValue } = useForm<FormData>()
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>()
   const billable = watch('billable')
 
   useEffect(() => {
@@ -117,11 +117,15 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
           </div>
 
           <div>
-            <label className="label">Project</label>
-            <select className="input cursor-pointer" {...register('projectId')}>
-              <option value="">No project</option>
+            <label className="label">Project <span className="text-orange-400">*</span></label>
+            <select
+              className={cn('input cursor-pointer', errors.projectId && 'border-orange-500/60')}
+              {...register('projectId', { required: 'Please select a project' })}
+            >
+              <option value="">— Select a project —</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
+            {errors.projectId && <p className="mt-1 text-xs text-orange-400">{errors.projectId.message}</p>}
           </div>
 
           <div>

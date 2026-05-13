@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 
-const select = { id: true, name: true, email: true, workspace: true, activeOrgId: true, createdAt: true }
+const select = { id: true, name: true, email: true, workspace: true, dailyHoursGoal: true, activeOrgId: true, createdAt: true }
 
 export async function findByEmail(email: string) {
   return prisma.user.findUnique({ where: { email } })
@@ -19,7 +19,7 @@ export async function createUser(data: {
   return prisma.user.create({ data, select })
 }
 
-export async function updateUser(id: string, data: { name?: string; workspace?: string }) {
+export async function updateUser(id: string, data: { name?: string; workspace?: string; dailyHoursGoal?: number }) {
   return prisma.user.update({ where: { id }, data, select })
 }
 

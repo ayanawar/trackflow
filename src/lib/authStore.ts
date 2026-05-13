@@ -6,8 +6,9 @@ export interface AuthUser {
   name: string
   email: string
   workspace: string
-  activeOrgId?: string | null
+  dailyHoursGoal: number
   avatarUrl?: string | null
+  activeOrgId?: string | null
 }
 
 interface AuthState {

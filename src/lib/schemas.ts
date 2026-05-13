@@ -50,6 +50,7 @@ export const tagSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   workspace: z.string().min(1).max(100).optional(),
+  dailyHoursGoal: z.number().int().min(1).max(24).optional(),
 })
 
 export const aiQuerySchema = z.object({
