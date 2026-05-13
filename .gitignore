@@ -21,6 +21,10 @@ dev.db
 dist/
 build/
 
+# Lock files (project uses bun — ignore npm/yarn locks)
+package-lock.json
+yarn.lock
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
