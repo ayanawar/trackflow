@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 import { OAuth2Client } from 'google-auth-library'
 import * as userRepo from '@/repositories/user.repository'
 
