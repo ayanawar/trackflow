@@ -24,7 +24,9 @@ export function useCreateEntry() {
     mutationFn: (data: {
       description?: string
       projectId?: string | null
+      taskId?: string | null
       tag?: string | null
+      billable?: boolean
       startTime: string
       endTime?: string | null
     }) => api.post('/time-entries', data).then(r => r.data),
@@ -41,6 +43,22 @@ export function useStopEntry() {
   })
 }
 
+export function usePauseEntry() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.patch(`/time-entries/${id}/pause`).then(r => r.data),
+    onSuccess: () => invalidateBoth(qc),
+  })
+}
+
+export function useResumeEntry() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.patch(`/time-entries/${id}/resume`).then(r => r.data),
+    onSuccess: () => invalidateBoth(qc),
+  })
+}
+
 export function useUpdateEntry() {
   const qc = useQueryClient()
   return useMutation({
@@ -48,7 +66,9 @@ export function useUpdateEntry() {
       id: string
       description?: string
       projectId?: string | null
+      taskId?: string | null
       tag?: string | null
+      billable?: boolean
       startTime?: string
       endTime?: string | null
     }) => api.put(`/time-entries/${id}`, data).then(r => r.data),
