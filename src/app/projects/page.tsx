@@ -1,11 +1,10 @@
 'use client'
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, X, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import { formatDuration } from '@/lib/utils'
+import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects'
 import type { Project } from '@/types'
 
 const COLORS = ['#4f8ef7', '#7c6fef', '#34d399', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa', '#f472b6', '#fb923c', '#6ee7b7']
@@ -13,34 +12,28 @@ const COLORS = ['#4f8ef7', '#7c6fef', '#34d399', '#fbbf24', '#f87171', '#60a5fa'
 interface FormData { name: string; client: string }
 
 export default function ProjectsPage() {
-  const qc = useQueryClient()
   const [modal, setModal] = useState(false)
   const [editProject, setEditProject] = useState<Project | null>(null)
   const [selectedColor, setSelectedColor] = useState(COLORS[0])
   const { register, handleSubmit, reset } = useForm<FormData>()
 
-  const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ['projects'],
-    queryFn: () => api.get('/projects').then(r => r.data),
-  })
+  const { data: projects = [] } = useProjects()
+  const createProject = useCreateProject()
+  const updateProject = useUpdateProject()
+  const deleteProject = useDeleteProject()
 
   const openCreate = () => { setEditProject(null); setSelectedColor(COLORS[0]); reset({ name: '', client: '' }); setModal(true) }
   const openEdit = (p: Project) => { setEditProject(p); setSelectedColor(p.color); reset({ name: p.name, client: p.client ?? '' }); setModal(true) }
 
-  const saveMutation = useMutation({
-    mutationFn: (data: FormData) => {
-      const payload = { name: data.name, client: data.client || null, color: selectedColor }
-      return editProject
-        ? api.put(`/projects/${editProject.id}`, payload)
-        : api.post('/projects', payload)
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['projects'] }); setModal(false) },
-  })
+  const handleSave = (data: FormData) => {
+    const payload = { name: data.name, client: data.client || null, color: selectedColor }
+    const mutation = editProject
+      ? updateProject.mutateAsync({ id: editProject.id, ...payload })
+      : createProject.mutateAsync(payload)
+    mutation.then(() => setModal(false))
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/projects/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
-  })
+  const isPending = createProject.isPending || updateProject.isPending
 
   return (
     <AppShell>
@@ -68,7 +61,7 @@ export default function ProjectsPage() {
                     <button className="text-white/30 hover:text-white transition-colors p-0.5" onClick={() => openEdit(p)}>
                       <Pencil size={12} />
                     </button>
-                    <button className="text-white/30 hover:text-accent-red transition-colors p-0.5" onClick={() => deleteMutation.mutate(p.id)}>
+                    <button className="text-white/30 hover:text-accent-red transition-colors p-0.5" onClick={() => deleteProject.mutate(p.id)}>
                       <X size={13} />
                     </button>
                   </div>
@@ -89,7 +82,7 @@ export default function ProjectsPage() {
               <h2 className="text-base font-semibold text-white">{editProject ? 'Edit Project' : 'New Project'}</h2>
               <button className="text-white/40 hover:text-white" onClick={() => setModal(false)}><X size={16} /></button>
             </div>
-            <form onSubmit={handleSubmit(d => saveMutation.mutate(d))} className="space-y-4">
+            <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
               <div>
                 <label className="label">Project name</label>
                 <input className="input" placeholder="e.g. Website Redesign" {...register('name', { required: true })} />
@@ -111,8 +104,8 @@ export default function ProjectsPage() {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Cancel</button>
-                <button type="submit" className="btn-primary" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? 'Saving…' : editProject ? 'Save Changes' : 'Create Project'}
+                <button type="submit" className="btn-primary" disabled={isPending}>
+                  {isPending ? 'Saving…' : editProject ? 'Save Changes' : 'Create Project'}
                 </button>
               </div>
             </form>

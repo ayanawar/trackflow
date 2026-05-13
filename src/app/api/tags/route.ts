@@ -1,16 +1,20 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest } from 'next/server'
-import prisma from '@/lib/prisma'
 import { getSessionFromRequest } from '@/lib/auth'
 import { tagSchema } from '@/lib/schemas'
 import { ok, created, badRequest, unauthorized, serverError } from '@/lib/response'
+import { findAllByUser, upsertByName } from '@/repositories/tag.repository'
 
 export async function GET(req: NextRequest) {
-  const session = await getSessionFromRequest(req)
-  if (!session) return unauthorized()
-  const tags = await prisma.tag.findMany({ where: { userId: session.userId }, orderBy: { name: 'asc' } })
-  return ok(tags)
+  try {
+    const session = await getSessionFromRequest(req)
+    if (!session) return unauthorized()
+    return ok(await findAllByUser(session.userId))
+  } catch (err) {
+    console.error('[tags:GET]', err)
+    return serverError()
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -20,11 +24,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const result = tagSchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
-    const tag = await prisma.tag.upsert({
-      where: { name_userId: { name: result.data.name, userId: session.userId } },
-      update: {},
-      create: { ...result.data, userId: session.userId },
-    })
+    const tag = await upsertByName(result.data.name, session.userId)
     return created(tag)
   } catch (err) {
     console.error('[tags:POST]', err)
