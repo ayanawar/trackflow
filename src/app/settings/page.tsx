@@ -26,11 +26,11 @@ export default function SettingsPage() {
   const weeklyGoal  = dailyGoal * 5
   const monthlyGoal = dailyGoal * 22
 
-  const { register: registerGoal, handleSubmit: handleGoalSubmit } = useForm<GoalForm>({
+  const { handleSubmit: handleGoalSubmit } = useForm<GoalForm>({
     defaultValues: { dailyHoursGoal: user?.dailyHoursGoal ?? 8 },
   })
   const goalMutation = useMutation({
-    mutationFn: (data: GoalForm) => api.patch('/auth/me', { dailyHoursGoal: dailyGoal }),
+    mutationFn: () => api.patch('/auth/me', { dailyHoursGoal: dailyGoal }),
     onSuccess: ({ data }) => setUser(data),
   })
 
@@ -79,7 +79,7 @@ export default function SettingsPage() {
             Set the expected daily work hours for your workspace. This governs daily, weekly, and monthly targets shown to all members.
           </p>
 
-          <form onSubmit={handleGoalSubmit(d => goalMutation.mutate(d))} className="space-y-5">
+          <form onSubmit={handleGoalSubmit(() => goalMutation.mutate())} className="space-y-5">
             {/* Slider */}
             <div>
               <div className="flex items-center justify-between mb-2">
