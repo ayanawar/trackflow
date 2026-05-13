@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
-import { Play, Square, Pause, Folder, DollarSign } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Play, Square, Pause, Folder, DollarSign, Mic, MicOff } from 'lucide-react'
 import TagInput from '@/components/tracker/TagInput'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/apiClient'
@@ -20,7 +20,41 @@ export default function TimerBar({ projects, runningEntry }: Props) {
   const [billable, setBillable] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [showProjects, setShowProjects] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
+  useEffect(() => {
+    setSpeechSupported(
+      typeof window !== 'undefined' &&
+      ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+    )
+  }, [])
+
+  const toggleSpeech = useCallback(() => {
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SR = (window as typeof window & { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition ?? window.SpeechRecognition
+    const recognition = new SR()
+    recognition.lang = 'en-US'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onstart = () => setIsListening(true)
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript
+      setDescription(prev => prev ? `${prev} ${transcript}` : transcript)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }, [isListening])
 
   const isRunning = !!runningEntry && runningEntry.isRunning
   const isPaused = !!runningEntry && runningEntry.isPaused
@@ -85,14 +119,31 @@ export default function TimerBar({ projects, runningEntry }: Props) {
 
   return (
     <div className="card flex flex-col gap-3 px-4 py-3.5 mb-7 md:flex-row md:items-center">
-      <input
-        className="min-h-10 w-full flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30"
-        placeholder="What are you working on?"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && !isActive && startMutation.mutate()}
-        disabled={isActive}
-      />
+      <div className="flex flex-1 items-center gap-2 min-w-0">
+        <input
+          className="min-h-10 w-full flex-1 bg-transparent border-none outline-none text-sm text-white placeholder:text-white/30"
+          placeholder={isListening ? 'Listening…' : 'What are you working on?'}
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !isActive && startMutation.mutate()}
+          disabled={isActive}
+        />
+        {speechSupported && !isActive && (
+          <button
+            type="button"
+            title={isListening ? 'Stop listening' : 'Speak to fill description'}
+            onClick={toggleSpeech}
+            className={cn(
+              'flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg border transition-all',
+              isListening
+                ? 'bg-red-500/20 border-red-500/40 text-red-400 animate-pulse'
+                : 'bg-white/5 border-white/10 text-white/30 hover:border-white/20 hover:text-white/60'
+            )}
+          >
+            {isListening ? <MicOff size={13} /> : <Mic size={13} />}
+          </button>
+        )}
+      </div>
 
       {/* Project picker */}
       <div className="relative w-full md:w-auto">
