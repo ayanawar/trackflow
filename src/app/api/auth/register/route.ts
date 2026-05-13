@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest } from 'next/server'
-import bcrypt from 'bcryptjs'
-import prisma from '@/lib/prisma'
 import { signToken, setTokenCookie } from '@/lib/auth'
 import { registerSchema } from '@/lib/schemas'
 import { created, badRequest, serverError } from '@/lib/response'
+import { register } from '@/services/auth.service'
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,20 +12,15 @@ export async function POST(req: NextRequest) {
     const result = registerSchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
 
-    const { name, email, password, workspace } = result.data
-
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) return badRequest('Email already in use')
-
-    const hashed = await bcrypt.hash(password, 12)
-    const user = await prisma.user.create({
-      data: { name, email, password: hashed, workspace },
-      select: { id: true, name: true, email: true, workspace: true, createdAt: true },
-    })
+    let user: { id: string; name: string; email: string; workspace: string; createdAt: Date }
+    try {
+      user = await register(result.data) as typeof user
+    } catch (err) {
+      return badRequest(err instanceof Error ? err.message : 'Registration failed')
+    }
 
     const token = await signToken({ userId: user.id, email: user.email, name: user.name })
     setTokenCookie(token)
-
     return created({ user, token })
   } catch (err) {
     console.error('[register]', err)

@@ -102,8 +102,14 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 
 **Acceptance Scenarios**:
 
+<<<<<<< HEAD
 1. **Given** the TimerBar is visible, **When** the user clicks the Tag button, **Then** an in-app UI element (dropdown, popover, or inline input) appears for tag selection or entry.
 2. **Given** a tag is entered or selected, **When** the user confirms, **Then** the selected tag is displayed in the TimerBar without a page reload or blocking dialog.
+=======
+1. **Given** the TimerBar is visible, **When** the user clicks the Tag button, **Then** an inline text input appears showing the user's existing tags as clickable suggestions.
+2. **Given** the tag input is open, **When** the user clicks an existing tag suggestion, **Then** that tag is selected and displayed in the TimerBar immediately.
+3. **Given** the tag input is open, **When** the user types a new tag name not in their existing tags, **Then** the typed text is accepted as the tag on confirmation — no blocking dialog is shown.
+>>>>>>> main
 
 ---
 
@@ -112,7 +118,12 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 - What happens when a route handler receives a malformed JSON body? The response must be a structured `400` error — not a 500 crash.
 - How does the system handle a running time entry being stopped concurrently from two browser tabs? The second stop should be a no-op (idempotent) rather than producing a 404 or 500.
 - What happens when the AI proxy endpoint is called without a question? It should return a structured `400` error with a clear message.
+<<<<<<< HEAD
 - How does the application behave if the Anthropic API is unreachable? The UI should display a user-friendly error — not expose the raw error response or stack trace.
+=======
+- What happens when a user exceeds the AI proxy rate limit? The server must return a `429 Too Many Requests` response; the UI must display a user-friendly "slow down" message — not a generic error.
+- How does the application behave if the Anthropic API is unreachable? The UI MUST display a generic message ("AI is unavailable, please try again") — no HTTP status codes, provider names, model names, or raw error detail may be shown to the user.
+>>>>>>> main
 - What happens when `buildISO` in `EntryModal.tsx` receives an invalid time string? Input should be validated before the ISO date is constructed.
 
 ---
@@ -121,6 +132,7 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 
 ### Functional Requirements
 
+<<<<<<< HEAD
 - **FR-001**: The application MUST proxy all third-party AI API calls through a server-side route — no third-party API calls may originate from the browser.
 - **FR-002**: All AI-generated or user-supplied content rendered as HTML MUST be sanitized or escaped before being inserted into the DOM.
 - **FR-003**: The `JWT_SECRET` environment variable MUST be required at startup; the application MUST NOT silently fall back to a hardcoded string.
@@ -131,6 +143,18 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 - **FR-008**: All Zod schemas MUST be centralized in `src/lib/schemas.ts`; no inline schema definitions are permitted in route files.
 - **FR-009**: Data-fetching logic for shared resources (projects, stats, time entries) MUST be extracted into custom React Query hooks in `src/hooks/`.
 - **FR-010**: The `TagInput` interaction in `TimerBar` MUST use a styled in-app UI control — the browser `prompt()` dialog MUST NOT be used.
+=======
+- **FR-001**: The application MUST proxy all third-party AI API calls through a server-side route — no third-party API calls may originate from the browser. The proxy endpoint MUST enforce a per-user rate limit (maximum 10 requests per minute per authenticated user) to prevent cost abuse.
+- **FR-002**: All AI-generated or user-supplied content rendered as HTML MUST be sanitized or escaped before being inserted into the DOM.
+- **FR-003**: The `JWT_SECRET` environment variable MUST be required at startup; the application MUST NOT silently fall back to a hardcoded string.
+- **FR-004**: All API route handlers MUST validate request bodies using shared Zod schemas from `src/lib/schemas.ts` before processing.
+- **FR-005**: All database access from ALL existing and future API routes MUST be delegated to repository functions — route handlers MUST NOT contain direct Prisma client calls. This applies to every route in the codebase, migrated in full during this sprint.
+- **FR-006**: Business rules (e.g., auto-stopping a running timer) MUST live in service functions — not inline in route handlers. All existing routes are in scope for this migration.
+- **FR-007**: Authorization checks (resource ownership verification) MUST be implemented in a shared utility — not duplicated across routes.
+- **FR-008**: All Zod schemas MUST be centralized in `src/lib/schemas.ts`; no inline schema definitions are permitted in route files.
+- **FR-009**: Data-fetching logic for shared resources (projects, stats, time entries) MUST be extracted into custom React Query hooks in `src/hooks/`.
+- **FR-010**: The `TagInput` interaction in `TimerBar` MUST use a styled in-app UI control — the browser `prompt()` dialog MUST NOT be used. The control MUST display the user's existing saved tags as clickable suggestions and MUST also allow free-text entry of a new tag name.
+>>>>>>> main
 - **FR-011**: The `GET /api/stats` route MUST execute no more than 4 database queries per request.
 - **FR-012**: The `authStore` logout action MUST be decoupled from navigation — navigation side effects MUST be handled in the consuming component, not inside the store.
 - **FR-013**: All TypeScript files MUST compile without errors under strict mode.
@@ -150,7 +174,7 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 ### Measurable Outcomes
 
 - **SC-001**: Zero TypeScript strict-mode errors after refactoring.
-- **SC-002**: `GET /api/stats` executes 4 or fewer database queries per request, verified via Prisma query logging.
+- **SC-002**: `GET /api/stats` executes 4 or fewer database queries per request, verified via Prisma query logging. Repeated calls within a 30-second window execute no additional queries (server-side response cache with 30s TTL).
 - **SC-003**: All third-party API calls (Anthropic, etc.) originate exclusively from server-side routes — confirmed by static code analysis (no `fetch` to external domains in `src/app/` client components).
 - **SC-004**: No `dangerouslySetInnerHTML` usage remains without an explicit sanitization step immediately preceding it.
 - **SC-005**: No inline Zod schema definitions remain in any `route.ts` file — all schemas imported from `src/lib/schemas.ts`.
@@ -158,6 +182,19 @@ The `prompt()` browser dialog used for tag input in the TimerBar must be replace
 - **SC-007**: All existing features (timer start/stop, entry CRUD, project CRUD, dashboard, insights) function identically after refactoring — verified by end-to-end smoke testing.
 - **SC-008**: The browser `prompt()` call in `TimerBar.tsx` is replaced — confirmed by static search (`grep -r "prompt(" src/`).
 - **SC-009**: `JWT_SECRET` missing from environment causes a server-side startup warning or error — not a silent fallback to a hardcoded value.
+- **SC-010**: The AI proxy endpoint returns `429` when a user exceeds 10 requests/minute — confirmed by sending 11 consecutive requests in a test.
+
+---
+
+## Clarifications
+
+### Session 2026-05-13
+
+- Q: Does FR-005/FR-006 (no direct Prisma in route handlers) apply to all existing routes now, or only routes touched during this sprint? → A: All existing routes are migrated in full during this sprint (Option A — full migration).
+- Q: What UX should replace the `prompt()` tag input in TimerBar — free-text only, or also show existing tags? → A: Inline text input with the user's existing tags shown as clickable suggestions; free-text entry of new tags also supported (Option B).
+- Q: Should the new AI proxy endpoint (POST /api/insights) enforce rate limiting? → A: Yes, per-user rate limit of 10 requests/minute enforced server-side (Option A).
+- Q: What is the target cache TTL for the stats endpoint (SC-002 "configured cache window")? → A: 30 seconds.
+- Q: When the Anthropic API is unreachable, what error detail should the user see? → A: Generic message only — "AI is unavailable, please try again." No status codes, provider names, or raw error detail exposed (Option A).
 
 ---
 

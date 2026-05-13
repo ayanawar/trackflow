@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Play, Square, Folder, Tag } from 'lucide-react'
+import { Play, Square, Folder } from 'lucide-react'
+import TagInput from '@/components/tracker/TagInput'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/apiClient'
 import { formatSeconds, cn } from '@/lib/utils'
@@ -85,12 +86,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       </div>
 
       {/* Tag */}
-      <button
-        className="flex min-h-9 w-full items-center justify-center gap-1.5 truncate px-2.5 py-1.5 rounded-lg text-xs text-white/50 bg-white/5 border border-white/10 hover:border-white/20 transition-all md:w-auto"
-        onClick={() => { const t = prompt('Tag (e.g. billable, dev, meeting):'); if (t !== null) setTag(t) }}
-      >
-        <Tag size={11} /><span className="truncate">{tag || 'Tag'}</span>
-      </button>
+      <TagInput value={tag} onSelect={setTag} />
 
       <div className="hidden w-px h-6 bg-white/[0.07] md:block" />
 

@@ -1,35 +1,23 @@
 'use client'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import TimerBar from '@/components/tracker/TimerBar'
 import StatsRow from '@/components/tracker/StatsRow'
 import EntryRow from '@/components/tracker/EntryRow'
 import EntryModal from '@/components/tracker/EntryModal'
 import { groupEntriesByDate, dateLabel, formatDuration } from '@/lib/utils'
-import type { TimeEntry, Project, Stats } from '@/types'
+import { useTimeEntries } from '@/hooks/useTimeEntries'
+import { useProjects } from '@/hooks/useProjects'
+import { useStats } from '@/hooks/useStats'
+import type { TimeEntry } from '@/types'
 
 export default function TrackerPage() {
   const [editEntry, setEditEntry] = useState<TimeEntry | null | undefined>(undefined)
 
-  const { data: entries = [] } = useQuery<TimeEntry[]>({
-    queryKey: ['timeEntries'],
-    queryFn: () => api.get('/time-entries').then(r => r.data),
-    refetchInterval: 10000,
-  })
-
-  const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ['projects'],
-    queryFn: () => api.get('/projects').then(r => r.data),
-  })
-
-  const { data: stats } = useQuery<Stats>({
-    queryKey: ['stats'],
-    queryFn: () => api.get('/stats').then(r => r.data),
-    refetchInterval: 15000,
-  })
+  const { data: entries = [] } = useTimeEntries()
+  const { data: projects = [] } = useProjects()
+  const { data: stats } = useStats()
 
   const runningEntry = entries.find(e => e.isRunning) ?? null
   const finished = entries.filter(e => !e.isRunning)
@@ -38,7 +26,6 @@ export default function TrackerPage() {
 
   return (
     <AppShell>
-      {/* Topbar */}
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Time Tracker</h1>

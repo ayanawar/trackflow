@@ -42,3 +42,13 @@ export const tagSchema = z.object({
   name: z.string().min(1).max(50),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#888888'),
 })
+
+export const updateUserSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  workspace: z.string().min(1).max(100).optional(),
+})
+
+export const aiQuerySchema = z.object({
+  question: z.string().min(1).max(500),
+  context: z.object({}).passthrough(),
+})

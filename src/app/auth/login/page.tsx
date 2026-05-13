@@ -60,9 +60,6 @@ export default function LoginPage() {
             <Link href="/auth/register" className="text-accent hover:underline">Sign up free</Link>
           </p>
 
-          <div className="mt-4 pt-4 border-t border-white/[0.07]">
-            <p className="text-center text-[11px] text-white/25">Demo: demo@trackflow.com / password</p>
-          </div>
         </div>
       </div>
     </div>

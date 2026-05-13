@@ -1,19 +1,20 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/tracker',   icon: Clock,           label: 'Tracker' },
+  { href: '/tracker', icon: Clock, label: 'Tracker' },
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/reports',   icon: BarChart2,        label: 'Reports' },
-  { href: '/projects',  icon: Folder,           label: 'Projects' },
+  { href: '/reports', icon: BarChart2, label: 'Reports' },
+  { href: '/projects', icon: Folder, label: 'Projects' },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuthStore()
 
   const initials = user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() ?? 'U'
@@ -22,6 +23,11 @@ export default function Sidebar() {
     { href: '/insights', icon: Sparkles, label: 'AI' },
     { href: '/settings', icon: Settings, label: 'Settings' },
   ]
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/auth/login')
+  }
 
   return (
     <>
@@ -40,7 +46,7 @@ export default function Sidebar() {
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-[11px] font-semibold text-white flex-shrink-0">
             {initials}
           </div>
-          <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/45 hover:text-accent-red" onClick={logout} title="Sign out">
+          <button className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/45 hover:text-accent-red" onClick={handleLogout} title="Sign out">
             <LogOut size={14} />
           </button>
         </div>
@@ -84,7 +90,7 @@ export default function Sidebar() {
           <Link href="/settings" className={cn('nav-link', pathname === '/settings' && 'active')}>
             <Settings size={15} />Settings
           </Link>
-          <button className="nav-link text-white/40 hover:text-accent-red" onClick={logout}>
+          <button className="nav-link text-white/40 hover:text-accent-red" onClick={handleLogout}>
             <LogOut size={15} />Sign out
           </button>
           <div className="flex items-center gap-2.5 px-3 py-2 mt-1">
