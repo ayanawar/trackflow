@@ -152,8 +152,8 @@ export default function TrackerPage() {
                   <AlertTriangle size={16} className="text-amber-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-amber-300">You've reached {weekHoursLabel} this week!</p>
-                  <p className="text-xs text-amber-400/60 mt-0.5">Submit your timesheet to log this week's completed work.</p>
+                  <p className="text-sm font-semibold text-amber-300">You&apos;ve reached {weekHoursLabel} this week!</p>
+                  <p className="text-xs text-amber-400/60 mt-0.5">Submit your timesheet to log this week&apos;s completed work.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
