@@ -9,7 +9,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
+      <head>
+        {/* Prevent theme flash on load */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=JSON.parse(localStorage.getItem('trackflow-theme')||'{}').state?.theme||'dark';document.documentElement.className=t==='light'?'light':'dark';}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
