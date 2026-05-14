@@ -124,11 +124,11 @@ html.light textarea::placeholder {
 
   /* Cards */
   .card {
-    @apply relative rounded-xl overflow-hidden;
+    @apply relative rounded-xl;
     background: rgb(var(--bg-card));
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .card:hover {
     border-color: var(--border-strong);
