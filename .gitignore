@@ -44,3 +44,10 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Spec Kit
+AGENTS.md
+.agents/
+.specify/
+specs/
+

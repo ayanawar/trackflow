@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)",
+      "Bash(git log *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git config *)",
+      "Bash(xxd prisma/schema.prisma)",
+      "Bash(python3 *)",
+      "Bash(git show *)",
+      "Read(//tmp/**)",
+      "Bash(git update-index *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)"
+    ]
+  }
+}
