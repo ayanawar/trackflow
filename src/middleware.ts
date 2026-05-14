@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, COOKIE_NAME } from '@/lib/auth'
 
 const PUBLIC_PAGE_PATHS = [
+  '/',
   '/auth/login',
   '/auth/register',
   '/auth/forgot-password',
@@ -19,6 +20,7 @@ const PUBLIC_API_PATHS  = [
   '/api/auth/invite',
   '/api/docs',
   '/api/openapi.json',
+  '/api/invitations',
 ]
 
 export async function middleware(req: NextRequest) {
