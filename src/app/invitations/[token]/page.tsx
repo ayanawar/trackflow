@@ -66,7 +66,7 @@ export default function AcceptInvitePage() {
             <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-5">
               <Building2 size={28} className="text-accent" />
             </div>
-            <h1 className="text-[17px] font-semibold text-white mb-1">You're invited!</h1>
+            <h1 className="text-[17px] font-semibold text-white mb-1">You&apos;re invited!</h1>
             <p className="text-sm text-white/50 mb-6">
               Join <span className="text-white font-medium">{invite.organization.name}</span> as <span className="text-white font-medium">{invite.role}</span>
             </p>

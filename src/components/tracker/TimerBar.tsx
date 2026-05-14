@@ -23,8 +23,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   useEffect(() => {
     setSpeechSupported(
@@ -39,9 +38,8 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       return
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any
-    const SR = w.webkitSpeechRecognition ?? w.SpeechRecognition
+    const w = window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }
+    const SR = w.webkitSpeechRecognition ?? window.SpeechRecognition
     const recognition = new SR()
     recognition.lang = 'en-US'
     recognition.continuous = false
