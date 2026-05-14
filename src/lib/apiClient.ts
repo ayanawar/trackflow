@@ -2,10 +2,10 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/lib/authStore'
 
 const api = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: "/api",
+  headers: { "Content-Type": "application/json" },
   withCredentials: true,
-})
+});
 
 let isRefreshing = false
 let failedQueue: Array<{ resolve: () => void; reject: (err: unknown) => void }> = []
@@ -49,8 +49,8 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(err)
-  }
-)
+    return Promise.reject(err);
+  },
+);
 
-export default api
+export default api;

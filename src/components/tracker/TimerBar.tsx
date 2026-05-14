@@ -38,7 +38,8 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       return
     }
 
-    const SR = (window as typeof window & { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition ?? window.SpeechRecognition
+    const w = window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }
+    const SR = w.webkitSpeechRecognition ?? window.SpeechRecognition
     const recognition = new SR()
     recognition.lang = 'en-US'
     recognition.continuous = false
@@ -47,7 +48,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
     recognition.onstart = () => setIsListening(true)
     recognition.onend = () => setIsListening(false)
     recognition.onerror = () => setIsListening(false)
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       setDescription(prev => prev ? `${prev} ${transcript}` : transcript)
     }

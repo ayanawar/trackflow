@@ -7,6 +7,7 @@ const select = {
   email: true,
   workspace: true,
   dailyHoursGoal: true,
+  activeOrgId: true,
   role: true,
   createdAt: true,
 }

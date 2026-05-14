@@ -11,6 +11,7 @@ export interface AuthUser {
   dailyHoursGoal: number
   role: Role
   avatarUrl?: string | null
+  activeOrgId?: string | null
 }
 
 interface AuthState {
@@ -18,7 +19,7 @@ interface AuthState {
   isLoading: boolean
   setUser: (user: AuthUser | null) => void
   setLoading: (isLoading: boolean) => void
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>()(

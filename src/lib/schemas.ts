@@ -101,6 +101,21 @@ export const adminUpdateUserSchema = z.object({
   workspace: z.string().min(1).max(100).optional(),
   dailyHoursGoal: z.number().int().min(1).max(24).optional(),
   role: roleSchema.optional(),
+
+})
+
+export const orgSchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(/^[a-z0-9-]+$/, 'Slug may only contain lowercase letters, numbers, and hyphens'),
+})
+
+export const orgUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  avatarUrl: z.string().url().nullable().optional(),
 })
 
 export const teamSchema = z.object({
@@ -134,3 +149,12 @@ export const clientAssignmentSchema = exactlyOneAssignee(z.object({
   teamId: z.string().min(1).nullable().optional(),
   accessLevel: clientAccessLevelSchema.default('VIEW'),
 }))
+
+export const inviteSchema = z.object({
+  email: z.string().email(),
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).default('EMPLOYEE'),
+})
+
+export const memberRoleSchema = z.object({
+  role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']),
+})

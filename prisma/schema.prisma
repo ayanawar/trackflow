@@ -1,5 +1,5 @@
 // Prisma Schema for TrackFlow
-// Provider: postgresql (production) — for local SQLite dev, change to "sqlite" below
+// Provider: postgresql (production)
 
 generator client {
   provider = "prisma-client-js"
@@ -57,6 +57,7 @@ model User {
   workspace      String   @default("My Workspace")
   dailyHoursGoal Int      @default(8)
   role           Role     @default(EMPLOYEE)
+  activeOrgId    String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -65,6 +66,7 @@ model User {
   tags                Tag[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  memberships         Membership[]
   teamMembers         TeamMember[]
   projectAssignments  ProjectAssignment[]
   clientAssignments   ClientAssignment[]
@@ -120,20 +122,66 @@ model InviteToken {
   @@map("invite_tokens")
 }
 
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  teams       Team[]
+  invitations Invitation[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  orgId     String
+  role      String   @default("MEMBER")
+  createdAt DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  email      String
+  orgId      String
+  role       String    @default("MEMBER")
+  token      String    @unique @default(cuid())
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([email, orgId])
+  @@map("invitations")
+}
+
 model Team {
   id          String   @id @default(cuid())
   name        String
   description String?
-  createdById String
+  orgId       String?
+  createdById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy          User                @relation("TeamCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy          User?               @relation("TeamCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  organization       Organization?       @relation(fields: [orgId], references: [id], onDelete: Cascade)
   members            TeamMember[]
   projectAssignments ProjectAssignment[]
   clientAssignments  ClientAssignment[]
 
-  @@unique([name, createdById])
   @@map("teams")
 }
 
@@ -157,15 +205,14 @@ model Client {
   id          String   @id @default(cuid())
   name        String
   description String?
-  createdById String
+  createdById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy         User               @relation("ClientCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy         User?              @relation("ClientCreator", fields: [createdById], references: [id], onDelete: Cascade)
   projects          Project[]
   clientAssignments ClientAssignment[]
 
-  @@unique([name, createdById])
   @@map("clients")
 }
 
