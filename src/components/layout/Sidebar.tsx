@@ -83,7 +83,7 @@ export default function Sidebar() {
 
       {/* ── Desktop sidebar ─────────────────────────── */}
       <aside
-        className="hidden w-[228px] min-w-[228px] flex-col h-screen sticky top-0 lg:flex animate-slide-in-left"
+        className="hidden w-[228px] min-w-[228px] flex-col h-full lg:flex animate-slide-in-left"
         style={{ background: 'rgb(var(--bg-secondary))', borderRight: '1px solid var(--border)' }}
       >
         {/* Logo */}
