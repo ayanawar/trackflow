@@ -78,11 +78,11 @@ export default function LoginPage() {
               style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc' }}>
               <Sparkles size={11} />Trusted by 1,000+ teams worldwide
             </div>
-            <h1 className="text-5xl font-bold text-white leading-tight mb-5">
+            <h1 className="text-5xl font-bold leading-tight mb-5" style={{ color: '#fff' }}>
               Track time.<br />
               <span className="gradient-text">Ship faster.</span>
             </h1>
-            <p className="text-lg text-white/50 leading-relaxed mb-10 max-w-sm">
+            <p className="text-lg leading-relaxed mb-10 max-w-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
               The modern time tracker built for teams that care about productivity and clarity.
             </p>
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
                     style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)' }}>
                     <Icon size={14} style={{ color: '#818cf8' }} />
                   </div>
-                  <span className="text-sm text-white/60">{text}</span>
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{text}</span>
                 </div>
               ))}
             </div>
@@ -104,12 +104,12 @@ export default function LoginPage() {
           {/* Bottom quote */}
           <div className="relative animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <div className="p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p className="text-sm text-white/50 italic">&ldquo;TrackFlow transformed how our team manages time. We ship 40% faster now.&rdquo;</p>
+              <p className="text-sm italic" style={{ color: 'rgba(255,255,255,0.5)' }}>&ldquo;TrackFlow transformed how our team manages time. We ship 40% faster now.&rdquo;</p>
               <div className="flex items-center gap-2.5 mt-3">
                 <div className="w-7 h-7 rounded-full animated-gradient flex items-center justify-center text-[11px] font-bold text-white">S</div>
                 <div>
-                  <p className="text-xs font-semibold text-white/70">Sarah K.</p>
-                  <p className="text-[10px] text-white/35">CTO, Momentum Labs</p>
+                  <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>Sarah K.</p>
+                  <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>CTO, Momentum Labs</p>
                 </div>
               </div>
             </div>

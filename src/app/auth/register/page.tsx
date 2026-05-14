@@ -77,11 +77,11 @@ export default function RegisterPage() {
 
           {/* Hero copy */}
           <div className="relative animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <h1 className="text-5xl font-bold text-white leading-tight mb-5">
+            <h1 className="text-5xl font-bold leading-tight mb-5" style={{ color: '#fff' }}>
               Start tracking.<br />
               <span className="gradient-text">Stay ahead.</span>
             </h1>
-            <p className="text-lg text-white/50 leading-relaxed mb-10 max-w-sm">
+            <p className="text-lg leading-relaxed mb-10 max-w-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
               Join thousands of teams who use TrackFlow to stay organized and ship their best work.
             </p>
 
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                     style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.4)' }}>
                     <Check size={11} style={{ color: '#818cf8' }} />
                   </div>
-                  <span className="text-sm text-white/60">{perk}</span>
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{perk}</span>
                 </div>
               ))}
             </div>
@@ -108,14 +108,14 @@ export default function RegisterPage() {
                 <div key={label} className="text-center p-3 rounded-2xl"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <p className="text-xl font-bold gradient-text">{value}</p>
-                  <p className="text-[11px] text-white/35 mt-0.5">{label}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{label}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="relative animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <p className="text-xs text-white/25 text-center">© 2025 TrackFlow. All rights reserved.</p>
+            <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>© 2025 TrackFlow. All rights reserved.</p>
           </div>
         </div>
 
