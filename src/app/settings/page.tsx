@@ -44,7 +44,8 @@ export default function SettingsPage() {
       </div>
 
       <div className="page-body">
-        <div className="mx-auto w-full max-w-lg space-y-6 lg:mx-0">
+        <div className="page-container">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {/* Profile */}
         <div className="card p-4 sm:p-6">
           <h2 className="text-sm font-semibold text-white mb-5">Profile</h2>
@@ -191,6 +192,7 @@ export default function SettingsPage() {
           >
             Delete account & all data
           </button>
+        </div>
         </div>
         </div>
       </div>
