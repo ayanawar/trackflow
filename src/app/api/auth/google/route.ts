@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest } from 'next/server'
-import { signToken, setTokenCookie } from '@/lib/auth'
+import { signToken, setTokenCookie, setRefreshCookie } from '@/lib/auth'
 import { googleAuthSchema } from '@/lib/schemas'
 import { ok, badRequest, unauthorized, serverError } from '@/lib/response'
 import { googleAuth } from '@/services/auth.service'
@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
     const result = googleAuthSchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
 
-    let user: Awaited<ReturnType<typeof googleAuth>>
+    let authResult: Awaited<ReturnType<typeof googleAuth>>
     try {
-      user = await googleAuth(result.data.idToken)
+      authResult = await googleAuth(result.data.idToken)
     } catch (err) {
       if (err instanceof Error) {
         if (err.message === 'Invalid Google token') return unauthorized(err.message)
@@ -23,8 +23,11 @@ export async function POST(req: NextRequest) {
       return serverError()
     }
 
-    const token = await signToken({ userId: user.id, email: user.email, name: user.name })
+    const { user, rawRefreshToken } = authResult
+    const role = ('role' in user ? user.role : 'EMPLOYEE') as 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+    const token = await signToken({ userId: user.id, email: user.email, name: user.name, role })
     setTokenCookie(token)
+    setRefreshCookie(rawRefreshToken)
     return ok({ user, token })
   } catch (err) {
     console.error('[google-auth]', err)

@@ -9,22 +9,20 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
     defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false } },
   }))
-  const { user, setUser } = useAuthStore()
+  const { setUser, setLoading } = useAuthStore()
   const fetched = useRef(false)
 
   useEffect(() => {
-    // Only fetch once per session, and only if we don't already have a user
     if (fetched.current) return
     fetched.current = true
-    if (user) return // already hydrated from persisted store
+    setLoading(true)
 
+    // Always validate the session on mount — the interceptor handles 401 → refresh → retry
+    // or redirects to login if the session is truly expired.
     api.get('/auth/me')
       .then(r => setUser(r.data))
-      .catch(() => {
-        // 401 = not logged in, silently ignore
-        setUser(null)
-      })
-  }, [setUser, user])
+      .catch(() => setUser(null))
+  }, [setLoading, setUser])
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>

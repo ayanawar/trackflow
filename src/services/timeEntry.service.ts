@@ -1,13 +1,23 @@
 import * as entryRepo from '@/repositories/timeEntry.repository'
 import * as tagRepo from '@/repositories/tag.repository'
 import { invalidateStatsCache } from '@/services/stats.service'
+import { canAccessProject } from '@/services/authorization.service'
+import type { Role } from '@/types'
 
 export async function listEntries(userId: string, limit = 100) {
   return entryRepo.findAllByUser(userId, limit)
 }
 
+export async function listAccessibleEntries(user: { userId: string; role: Role }, limit = 100) {
+  return entryRepo.findAllAccessible(user, limit)
+}
+
 export async function getEntry(id: string, userId: string) {
   return entryRepo.findEntryById(id, userId)
+}
+
+export async function getAccessibleEntry(id: string, user: { userId: string; role: Role }) {
+  return entryRepo.findAccessibleEntryById(id, user)
 }
 
 export async function createEntry(userId: string, data: {
@@ -18,7 +28,11 @@ export async function createEntry(userId: string, data: {
   billable?: boolean
   startTime: string
   endTime?: string | null
-}) {
+}, role: Role = 'EMPLOYEE') {
+  if (data.projectId) {
+    const allowed = await canAccessProject({ userId, role }, data.projectId, ['TRACK', 'MANAGE', 'APPROVE'])
+    if (!allowed) throw new Error('Forbidden')
+  }
   await entryRepo.stopRunning(userId, new Date())
 
   let tagId: string | null = null
@@ -107,6 +121,58 @@ export async function updateEntry(id: string, userId: string, data: {
   return updated
 }
 
+export async function updateAccessibleEntry(id: string, user: { userId: string; role: Role }, data: {
+  description?: string
+  projectId?: string | null
+  taskId?: string | null
+  tag?: string | null
+  billable?: boolean
+  startTime?: string
+  endTime?: string | null
+}) {
+  const entry = await entryRepo.findAccessibleEntryById(id, user)
+  if (!entry) return null
+
+  if (data.projectId) {
+    const allowed = await canAccessProject(user, data.projectId, ['TRACK', 'MANAGE', 'APPROVE'])
+    if (!allowed) throw new Error('Forbidden')
+  }
+
+  let tagId = entry.tagId
+  if (data.tag !== undefined) {
+    if (data.tag === null) {
+      tagId = null
+    } else {
+      const t = await tagRepo.upsertByName(data.tag, entry.userId)
+      tagId = t.id
+    }
+  }
+
+  const start = data.startTime ? new Date(data.startTime) : new Date(entry.startTime)
+  const end = data.endTime !== undefined
+    ? (data.endTime ? new Date(data.endTime) : null)
+    : entry.endTime
+  const duration = end
+    ? Math.floor((end.getTime() - start.getTime()) / 1000) + entry.pausedDuration
+    : null
+
+  const updated = await entryRepo.updateEntryById(id, {
+    ...(data.description !== undefined && { description: data.description }),
+    ...(data.projectId !== undefined && { projectId: data.projectId ?? null }),
+    ...(data.taskId !== undefined && { taskId: data.taskId ?? null }),
+    ...(data.billable !== undefined && { billable: data.billable }),
+    tagId,
+    startTime: start,
+    endTime: end,
+    duration,
+    isRunning: !end && !entry.isPaused,
+  })
+
+  invalidateStatsCache(entry.userId)
+  if (entry.userId !== user.userId) invalidateStatsCache(user.userId)
+  return updated
+}
+
 export async function pauseEntry(id: string, userId: string) {
   const entry = await entryRepo.findEntryById(id, userId)
   if (!entry || !entry.isRunning) return null
@@ -137,5 +203,14 @@ export async function deleteEntry(id: string, userId: string) {
   if (!entry) return null
   await entryRepo.deleteEntry(id, userId)
   invalidateStatsCache(userId)
+  return true
+}
+
+export async function deleteAccessibleEntry(id: string, user: { userId: string; role: Role }) {
+  const entry = await entryRepo.findAccessibleEntryById(id, user)
+  if (!entry) return null
+  await entryRepo.deleteEntryById(id)
+  invalidateStatsCache(entry.userId)
+  if (entry.userId !== user.userId) invalidateStatsCache(user.userId)
   return true
 }

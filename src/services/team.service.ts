@@ -2,6 +2,16 @@ import * as teamRepo from '@/repositories/team.repository'
 import * as orgRepo from '@/repositories/organization.repository'
 import { hasRole } from '@/lib/roles'
 
+
+
+export async function upsertTeamMember(teamId: string, data: { userId: string; memberRole: 'MANAGER' | 'MEMBER' }) {
+  return teamRepo.upsertMember({ teamId, ...data })
+}
+
+export async function removeTeamMember(teamId: string, userId: string) {
+  return teamRepo.removeMember(teamId, userId)
+}
+
 async function getMembership(userId: string, orgId: string) {
   return orgRepo.findMembership(userId, orgId)
 }

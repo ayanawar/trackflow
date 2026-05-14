@@ -1,6 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { forbidden, unauthorized } from '@/lib/response'
+import { canAccessClient, canAccessProject } from '@/services/authorization.service'
+import type { Role } from '@/types'
 
 const INSECURE_DEFAULT = 'trackflow-secret-key-change-in-production'
 const rawSecret = process.env.JWT_SECRET
@@ -15,18 +18,20 @@ if (!rawSecret || rawSecret === INSECURE_DEFAULT) {
 
 const JWT_SECRET = new TextEncoder().encode(rawSecret ?? INSECURE_DEFAULT)
 const COOKIE_NAME = 'tf_token'
+const REFRESH_COOKIE_NAME = 'tf_refresh'
 
 export interface JWTPayload {
   userId: string
   email: string
   name: string
+  role: Role
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime('15m')
     .sign(JWT_SECRET)
 }
 
@@ -59,7 +64,7 @@ export function setTokenCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: 60 * 15, // 15 minutes
     path: '/',
   })
 }
@@ -68,4 +73,61 @@ export function clearTokenCookie() {
   cookies().set(COOKIE_NAME, '', { maxAge: 0, path: '/' })
 }
 
-export { COOKIE_NAME }
+export function setRefreshCookie(token: string) {
+  cookies().set(REFRESH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    path: '/',
+  })
+}
+
+export function clearRefreshCookie() {
+  cookies().set(REFRESH_COOKIE_NAME, '', { maxAge: 0, path: '/' })
+}
+
+export function getRefreshFromRequest(req: NextRequest): string | null {
+  return req.cookies.get(REFRESH_COOKIE_NAME)?.value ?? null
+}
+
+export function requireRole(roles: string[]) {
+  return async (req: NextRequest): Promise<NextResponse | null> => {
+    const session = await getSessionFromRequest(req)
+    if (!session) return unauthorized()
+    if (!roles.includes(session.role)) return forbidden()
+    return null
+  }
+}
+
+export function requireProjectAccess(
+  getProjectId: (req: NextRequest) => string | null,
+  levels?: string[]
+) {
+  return async (req: NextRequest): Promise<NextResponse | null> => {
+    const session = await getSessionFromRequest(req)
+    if (!session) return unauthorized()
+    const projectId = getProjectId(req)
+    if (!projectId) return forbidden()
+    const allowed = await canAccessProject({ userId: session.userId, role: session.role }, projectId, levels)
+    if (!allowed) return forbidden()
+    return null
+  }
+}
+
+export function requireClientAccess(
+  getClientId: (req: NextRequest) => string | null,
+  levels?: string[]
+) {
+  return async (req: NextRequest): Promise<NextResponse | null> => {
+    const session = await getSessionFromRequest(req)
+    if (!session) return unauthorized()
+    const clientId = getClientId(req)
+    if (!clientId) return forbidden()
+    const allowed = await canAccessClient({ userId: session.userId, role: session.role }, clientId, levels)
+    if (!allowed) return forbidden()
+    return null
+  }
+}
+
+export { COOKIE_NAME, REFRESH_COOKIE_NAME }

@@ -1,16 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2 } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/tracker',    icon: Clock,           label: 'Tracker' },
-  { href: '/reports',    icon: BarChart2,       label: 'Reports' },
-  { href: '/projects',   icon: Folder,          label: 'Projects' },
-  { href: '/organizations', icon: Building2,    label: 'Organizations' },
+  { href: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/tracker',       icon: Clock,           label: 'Tracker' },
+  { href: '/reports',       icon: BarChart2,       label: 'Reports' },
+  { href: '/projects',      icon: Folder,          label: 'Projects' },
+  { href: '/organizations', icon: Building2,       label: 'Organizations' },
 ]
 
 const bottomItems = [
@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   const initials = user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() ?? 'U'
 
-  const mobileItems = [...navItems, ...bottomItems]
+  const mobileItems = [...navItems, ...bottomItems, { href: '/settings', icon: Settings, label: 'Settings' }]
 
   const handleLogout = async () => {
     await logout()
@@ -57,17 +57,20 @@ export default function Sidebar() {
       </header>
 
       {/* ── Mobile bottom nav ───────────────────────── */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-7 border-t px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden"
-        style={{ borderColor: 'var(--border)', background: 'rgba(var(--bg-secondary), 0.95)' }}>
+      <nav
+        className={cn(
+          'fixed inset-x-0 bottom-0 z-40 grid border-t px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden',
+          `grid-cols-${mobileItems.length}`
+        )}
+        style={{ borderColor: 'var(--border)', background: 'rgba(var(--bg-secondary), 0.95)' }}
+      >
         {mobileItems.map(({ href, icon: Icon, label }) => {
           const active = pathname.startsWith(href)
           return (
             <Link key={href} href={href}
               className={cn(
                 'flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[10px] leading-none transition-all',
-                active
-                  ? 'text-accent bg-accent/10'
-                  : 'text-white/45 hover:text-white'
+                active ? 'text-accent bg-accent/10' : 'text-white/45 hover:text-white'
               )}
               style={active ? { color: 'rgb(var(--accent))' } : {}}
             >
@@ -116,6 +119,23 @@ export default function Sidebar() {
               <Icon size={15} />{label}
             </Link>
           ))}
+
+          {user?.role === 'ADMIN' && (
+            <>
+              <div className="mt-3 mb-1 px-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'rgb(var(--text-faint))' }}>
+                Admin
+              </div>
+              <Link href="/admin/users" className={cn('nav-link', pathname.startsWith('/admin/users') && 'active')}>
+                <ShieldCheck size={15} />User Management
+              </Link>
+              <Link href="/admin/teams" className={cn('nav-link', pathname.startsWith('/admin/teams') && 'active')}>
+                <Users size={15} />Teams
+              </Link>
+              <Link href="/admin/clients" className={cn('nav-link', pathname.startsWith('/admin/clients') && 'active')}>
+                <Building2 size={15} />Clients
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Footer */}
