@@ -8,6 +8,7 @@ export interface AuthUser {
   workspace: string
   dailyHoursGoal: number
   avatarUrl?: string | null
+  activeOrgId?: string | null
 }
 
 interface AuthState {

@@ -1,8 +1,9 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
+import OrgSwitcher from '@/components/layout/OrgSwitcher'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -21,6 +22,7 @@ export default function Sidebar() {
   const mobileItems = [
     ...navItems,
     { href: '/insights', icon: Sparkles, label: 'AI' },
+    { href: '/organizations', icon: Building2, label: 'Orgs' },
     { href: '/settings', icon: Settings, label: 'Settings' },
   ]
 
@@ -52,11 +54,9 @@ export default function Sidebar() {
         </div>
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-white/[0.08] bg-[rgb(var(--bg-secondary))]/95 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-7 border-t border-white/[0.08] bg-[rgb(var(--bg-secondary))]/95 px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden">
         {mobileItems.map(({ href, icon: Icon, label }) => {
-          const active = href === '/tracker' || href === '/dashboard' || href === '/reports' || href === '/projects'
-            ? pathname.startsWith(href)
-            : pathname === href
+          const active = pathname.startsWith(href)
           return (
             <Link key={href} href={href} className={cn('flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-1.5 text-[10px] leading-none text-white/45 transition-colors hover:text-white', active && 'bg-accent/10 text-accent')}>
               <Icon size={16} />
@@ -83,6 +83,14 @@ export default function Sidebar() {
           <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">AI</div>
           <Link href="/insights" className={cn('nav-link', pathname === '/insights' && 'active')}>
             <Sparkles size={15} />AI Insights
+          </Link>
+
+          <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">Organization</div>
+          <div className="px-1">
+            <OrgSwitcher activeOrgId={user?.activeOrgId} />
+          </div>
+          <Link href="/organizations" className={cn('nav-link', pathname.startsWith('/organizations') && 'active')}>
+            <Building2 size={15} />Organizations
           </Link>
         </nav>
 

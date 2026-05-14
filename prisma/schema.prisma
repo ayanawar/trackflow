@@ -17,16 +17,89 @@ model User {
   password  String?
   googleId  String?  @unique
   avatarUrl String?
-  workspace      String @default("My Workspace")
-  dailyHoursGoal Int    @default(8)
+  workspace      String  @default("My Workspace")
+  dailyHoursGoal Int     @default(8)
+  activeOrgId    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   projects    Project[]
   timeEntries TimeEntry[]
   tags        Tag[]
+  memberships Membership[]
+  teamMembers TeamMember[]
 
   @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  teams       Team[]
+  invitations Invitation[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  orgId     String
+  role      String   @default("MEMBER")
+  createdAt DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("memberships")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  orgId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  userId String
+  teamId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@map("team_members")
+}
+
+model Invitation {
+  id          String    @id @default(cuid())
+  email       String
+  orgId       String
+  role        String    @default("MEMBER")
+  token       String    @unique @default(cuid())
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([email, orgId])
+  @@map("invitations")
 }
 
 model Project {
