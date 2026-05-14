@@ -3,12 +3,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
-import ThemeToggle from '@/components/layout/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/tracker',    icon: Clock,           label: 'Tracker' },
   { href: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/tracker',    icon: Clock,           label: 'Tracker' },
   { href: '/reports',    icon: BarChart2,       label: 'Reports' },
   { href: '/projects',   icon: Folder,          label: 'Projects' },
   { href: '/organizations', icon: Building2,    label: 'Organizations' },
@@ -45,7 +44,6 @@ export default function Sidebar() {
           <span className="text-[16px] font-bold tracking-tight gradient-text hidden min-[360px]:block">TrackFlow</span>
         </Link>
         <div className="flex items-center gap-2">
-          <ThemeToggle compact />
           <div className="w-7 h-7 rounded-full animated-gradient flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 shadow-md">
             {initials}
           </div>
@@ -123,9 +121,7 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="p-2.5" style={{ borderTop: '1px solid var(--border)' }}>
-          <ThemeToggle />
-
-          <Link href="/settings" className={cn('nav-link mt-0.5', pathname === '/settings' && 'active')}>
+          <Link href="/settings" className={cn('nav-link', pathname === '/settings' && 'active')}>
             <Settings size={15} />Settings
           </Link>
 

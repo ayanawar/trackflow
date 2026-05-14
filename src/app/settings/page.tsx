@@ -2,10 +2,11 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
-import { Settings, Clock, Target } from 'lucide-react'
+import { Settings, Clock, Target, Sun, Moon } from 'lucide-react'
 import api from '@/lib/apiClient'
 import AppShell from '@/components/layout/AppShell'
 import { useAuthStore } from '@/lib/authStore'
+import { useThemeStore } from '@/lib/themeStore'
 import { cn } from '@/lib/utils'
 
 interface ProfileForm { name: string; workspace: string }
@@ -13,6 +14,7 @@ interface GoalForm { dailyHoursGoal: number }
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
+  const { theme, toggle: toggleTheme } = useThemeStore()
   const { register, handleSubmit } = useForm<ProfileForm>({
     defaultValues: { name: user?.name ?? '', workspace: user?.workspace ?? '' },
   })
@@ -119,6 +121,48 @@ export default function SettingsPage() {
               {goalMutation.isSuccess && <span className="text-xs text-accent-green">✓ Goal updated!</span>}
             </div>
           </form>
+        </div>
+
+        {/* Appearance */}
+        <div className="card p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-1">
+            {theme === 'dark' ? <Moon size={14} className="text-accent" /> : <Sun size={14} className="text-amber-400" />}
+            <h2 className="text-sm font-semibold text-white">Appearance</h2>
+          </div>
+          <p className="text-xs text-white/40 mb-5">Choose between dark and light mode for the interface.</p>
+          <div className="grid grid-cols-2 gap-3">
+            {(['dark', 'light'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => theme !== t && toggleTheme()}
+                className={cn(
+                  'relative flex flex-col items-center gap-3 rounded-xl border p-4 transition-all',
+                  theme === t
+                    ? 'border-accent/50 bg-accent/8 ring-1 ring-accent/20'
+                    : 'border-white/[0.08] bg-white/[0.02] hover:border-white/20'
+                )}
+              >
+                <div className={cn(
+                  'w-full h-14 rounded-lg flex items-center justify-center gap-2 text-xs font-medium',
+                  t === 'dark'
+                    ? 'bg-[#0a0c14] text-white/60'
+                    : 'bg-[#f0f5ff] text-slate-500'
+                )}>
+                  <div className={cn('w-2 h-2 rounded-full', t === 'dark' ? 'bg-indigo-400' : 'bg-indigo-500')} />
+                  <span>Aa</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {t === 'dark' ? <Moon size={12} className="text-white/50" /> : <Sun size={12} className="text-amber-400" />}
+                  <span className="text-xs font-medium text-white capitalize">{t}</span>
+                </div>
+                {theme === t && (
+                  <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Account info */}
