@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, ShieldCheck, UserPlus, Copy, X, Check, ExternalLink } from 'lucide-react'
+import { Users, ShieldCheck, UserPlus, Copy, X, Check, ExternalLink, UserX } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { useAuthStore } from '@/lib/authStore'
@@ -88,16 +88,14 @@ export default function AdminUsersPage() {
     inviteMutation.reset()
   }
 
-  if (authLoading || me?.role !== 'ADMIN') return (<>
-    
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-accent animate-spin" aria-label="Loading admin session" />
-      </div>
-    
+  if (authLoading || me?.role !== 'ADMIN') return (
+    <div className="flex min-h-screen items-center justify-center px-6">
+      <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-accent animate-spin" aria-label="Loading admin session" />
+    </div>
   )
 
   return (
-    
+    <>
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <ShieldCheck size={15} className="text-white/40" />
@@ -112,6 +110,17 @@ export default function AdminUsersPage() {
         <div className="page-container">
           {isLoading ? (
             <div className="text-center py-20 text-white/30 text-sm">Loading users…</div>
+          ) : users.length === 0 ? (
+            <div className="card flex flex-col items-center justify-center py-20 px-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5">
+                <UserX size={26} className="text-white/20" />
+              </div>
+              <p className="text-base font-semibold text-white mb-1">No users yet</p>
+              <p className="text-sm text-white/35 max-w-xs mb-6">Your workspace has no members. Invite someone to get started.</p>
+              <button className="btn-primary" onClick={() => setShowInviteModal(true)}>
+                <UserPlus size={14} />Invite your first user
+              </button>
+            </div>
           ) : (
             <div className="card overflow-hidden">
               <div className="px-5 py-4 border-b border-white/[0.07] flex items-center gap-2">

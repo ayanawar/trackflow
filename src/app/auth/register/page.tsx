@@ -34,7 +34,7 @@ export default function RegisterPage() {
     mutationFn: (data: FormData) => api.post('/auth/register', data),
     onSuccess: ({ data }) => {
       setUser(data.user)
-      router.push(data.user.role === 'ADMIN' ? '/admin/users' : '/tracker')
+      router.push('/dashboard')
     },
   })
 
@@ -42,7 +42,7 @@ export default function RegisterPage() {
     mutationFn: (idToken: string) => api.post('/auth/google', { idToken }),
     onSuccess: ({ data }) => {
       setUser(data.user)
-      router.push(data.user.role === 'ADMIN' ? '/admin/users' : '/tracker')
+      router.push('/dashboard')
     },
     onError: (err: any) => setGoogleError(err.response?.data?.error ?? 'Google sign-in failed.'),
   })
