@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Users, UserMinus, ChevronDown, Mail, X, Crown, Shield, Briefcase, User } from 'lucide-react'
+import { Users, UserMinus, ChevronDown, Mail, X, Crown, Shield, Briefcase, User, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import AppShell from '@/components/layout/AppShell'
 import { useAuthStore } from '@/lib/authStore'
 import {
@@ -70,6 +71,9 @@ export default function MembersPage() {
     <AppShell>
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <Link href="/organizations" className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70 mb-1.5 transition-colors">
+            <ArrowLeft size={12} /> Organizations
+          </Link>
           <h1 className="text-[15px] font-semibold text-white">Members</h1>
           <p className="text-[12px] text-white/40 mt-0.5">{members.length} member{members.length !== 1 ? 's' : ''}</p>
         </div>

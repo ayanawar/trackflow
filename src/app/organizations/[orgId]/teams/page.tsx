@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
-import { Users, Plus, X, Pencil, UserPlus } from 'lucide-react'
+import { Users, Plus, X, Pencil, UserPlus, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import AppShell from '@/components/layout/AppShell'
 import { useAuthStore } from '@/lib/authStore'
 import { useOrgMembers } from '@/hooks/useOrgMembers'
@@ -86,6 +87,9 @@ export default function TeamsPage() {
     <AppShell>
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <Link href="/organizations" className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70 mb-1.5 transition-colors">
+            <ArrowLeft size={12} /> Organizations
+          </Link>
           <h1 className="text-[15px] font-semibold text-white">Teams</h1>
           <p className="text-[12px] text-white/40 mt-0.5">{teams.length} team{teams.length !== 1 ? 's' : ''}</p>
         </div>
