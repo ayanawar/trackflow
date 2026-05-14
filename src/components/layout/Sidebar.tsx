@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2 } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
-import OrgSwitcher from '@/components/layout/OrgSwitcher'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -85,10 +84,6 @@ export default function Sidebar() {
             <Sparkles size={15} />AI Insights
           </Link>
 
-          <div className="mt-3 mb-1 px-3 text-[10px] text-white/25 uppercase tracking-widest font-medium">Organization</div>
-          <div className="px-1">
-            <OrgSwitcher activeOrgId={user?.activeOrgId} />
-          </div>
           <Link href="/organizations" className={cn('nav-link', pathname.startsWith('/organizations') && 'active')}>
             <Building2 size={15} />Organizations
           </Link>
