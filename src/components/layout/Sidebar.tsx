@@ -15,7 +15,6 @@ const navItems = [
 
 const bottomItems = [
   { href: '/insights', icon: Sparkles, label: 'AI' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 export default function Sidebar() {
