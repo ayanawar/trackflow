@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Users, Plus, Pencil, Trash2, Check, X, ChevronDown, ChevronUp, UserPlus, Shield } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import AppShell from '@/components/layout/AppShell'
+
 import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
@@ -103,15 +103,15 @@ export default function AdminTeamsPage() {
   })
 
   if (authLoading || user?.role !== 'ADMIN') return (
-    <AppShell>
+    
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-accent animate-spin" />
       </div>
-    </AppShell>
+    
   )
 
   return (
-    <AppShell>
+    <>
       {/* Header */}
       <div className="page-header flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -445,6 +445,7 @@ export default function AdminTeamsPage() {
 
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

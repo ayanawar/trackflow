@@ -1,6 +1,6 @@
 'use client'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import AppShell from '@/components/layout/AppShell'
+
 import { formatDuration } from '@/lib/utils'
 import { useStats } from '@/hooks/useStats'
 import { useProjects } from '@/hooks/useProjects'
@@ -23,8 +23,8 @@ export default function DashboardPage() {
 
   const maxSecs = projects.reduce((m, p) => Math.max(m, p.totalSeconds ?? 0), 1)
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header">
         <h1 className="text-[15px] font-semibold text-white">Dashboard</h1>
         <p className="text-xs text-white/40 mt-0.5">Weekly overview</p>
@@ -110,6 +110,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { Settings, Clock, Target, Sun, Moon } from 'lucide-react'
 import api from '@/lib/apiClient'
-import AppShell from '@/components/layout/AppShell'
+
 import { useAuthStore } from '@/lib/authStore'
 import { useThemeStore } from '@/lib/themeStore'
 import { cn } from '@/lib/utils'
@@ -36,8 +36,8 @@ export default function SettingsPage() {
     onSuccess: ({ data }) => setUser(data),
   })
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header flex items-center gap-3">
         <Settings size={15} className="text-white/40" />
         <h1 className="text-[15px] font-semibold text-white">Settings</h1>
@@ -196,6 +196,7 @@ export default function SettingsPage() {
         </div>
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

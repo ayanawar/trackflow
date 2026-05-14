@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Sparkles, Send, Lock } from 'lucide-react'
 import api from '@/lib/apiClient'
-import AppShell from '@/components/layout/AppShell'
+
 import SafeMarkdown from '@/components/ui/SafeMarkdown'
 import { useTimeEntries } from '@/hooks/useTimeEntries'
 import { useStats } from '@/hooks/useStats'
@@ -70,7 +70,7 @@ export default function InsightsPage() {
 
   if (!canUseInsights) {
     return (
-      <AppShell>
+      <>
         <div className="page-header flex items-center gap-3">
           <Sparkles size={15} className="text-accent-purple" />
           <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
@@ -86,12 +86,12 @@ export default function InsightsPage() {
             </p>
           </div>
         </div>
-      </AppShell>
+      </>
     )
   }
 
   return (
-    <AppShell>
+    <>
       <div className="page-header flex items-center gap-3">
         <Sparkles size={15} className="text-accent-purple" />
         <div className="min-w-0">
@@ -152,6 +152,7 @@ export default function InsightsPage() {
           )}
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Building2, Plus, Users, ArrowRight, Crown, Shield, Briefcase, User } from 'lucide-react'
-import AppShell from '@/components/layout/AppShell'
+
 import { useOrganizations, useCreateOrg, useSwitchOrg } from '@/hooks/useOrganization'
 
 const ROLE_ICONS: Record<string, React.ReactNode> = {
@@ -43,8 +43,8 @@ export default function OrganizationsPage() {
     }
   }
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-[15px] font-semibold text-white">Organizations</h1>
         <button className="btn-primary w-full sm:w-auto" onClick={() => setShowCreate(true)}>
@@ -149,6 +149,7 @@ export default function OrganizationsPage() {
           </div>
         </div>
       )}
-    </AppShell>
+    
+  </>
   )
 }

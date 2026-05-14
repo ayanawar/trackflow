@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Users, ShieldCheck, UserPlus, Copy, X, Check, ExternalLink } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import AppShell from '@/components/layout/AppShell'
+
 import { useAuthStore } from '@/lib/authStore'
 import api from '@/lib/apiClient'
 import { useRouter } from 'next/navigation'
@@ -88,16 +88,16 @@ export default function AdminUsersPage() {
     inviteMutation.reset()
   }
 
-  if (authLoading || me?.role !== 'ADMIN') return (
-    <AppShell>
+  if (authLoading || me?.role !== 'ADMIN') return (<>
+    
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-accent animate-spin" aria-label="Loading admin session" />
       </div>
-    </AppShell>
+    
   )
 
   return (
-    <AppShell>
+    
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <ShieldCheck size={15} className="text-white/40" />
@@ -261,6 +261,7 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
-    </AppShell>
+    
+  </>
   )
 }

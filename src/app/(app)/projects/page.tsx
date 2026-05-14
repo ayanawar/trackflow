@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Plus, X, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import AppShell from '@/components/layout/AppShell'
+
 import { formatDuration } from '@/lib/utils'
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '@/hooks/useProjects'
 import { useAuthStore } from '@/lib/authStore'
@@ -38,8 +38,8 @@ export default function ProjectsPage() {
 
   const isPending = createProject.isPending || updateProject.isPending
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Projects</h1>
@@ -126,6 +126,7 @@ export default function ProjectsPage() {
           </div>
         </div>
       )}
-    </AppShell>
+    
+  </>
   )
 }

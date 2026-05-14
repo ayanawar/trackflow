@@ -4,7 +4,7 @@ import {
   Plus, ChevronLeft, ChevronRight, Send, CheckCircle2,
   AlertTriangle, Clock, DollarSign, X,
 } from 'lucide-react'
-import AppShell from '@/components/layout/AppShell'
+
 import TimerBar from '@/components/tracker/TimerBar'
 import EntryRow from '@/components/tracker/EntryRow'
 import EntryModal from '@/components/tracker/EntryModal'
@@ -123,8 +123,8 @@ export default function TrackerPage() {
   // ── Progress colour ────────────────────────────────────────────────────────
   const barColor = weekPct < 75 ? '#4f8ef7' : weekPct < 100 ? '#fbbf24' : '#34d399'
 
-  return (
-    <AppShell>
+  return (<>
+    
       {/* ── Page header ────────────────────────────────────────────────────── */}
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -465,6 +465,7 @@ export default function TrackerPage() {
       {editEntry !== undefined && (
         <EntryModal entry={editEntry} projects={projects} onClose={() => setEditEntry(undefined)} />
       )}
-    </AppShell>
+    
+  </>
   )
 }

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Download, Filter } from 'lucide-react'
 import api from '@/lib/apiClient'
-import AppShell from '@/components/layout/AppShell'
+
 import { formatDuration, formatTimeRange } from '@/lib/utils'
 import { useAuthStore } from '@/lib/authStore'
 import type { TimeEntry, Project } from '@/types'
@@ -68,8 +68,8 @@ export default function ReportsPage() {
     a.click()
   }
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">Reports</h1>
@@ -150,6 +150,7 @@ export default function ReportsPage() {
         </div>
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Building2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import AppShell from '@/components/layout/AppShell'
+
 import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 
@@ -22,16 +22,16 @@ export default function AdminClientsPage() {
     enabled: !authLoading && user?.role === 'ADMIN',
   })
 
-  if (authLoading || user?.role !== 'ADMIN') return (
-    <AppShell>
+  if (authLoading || user?.role !== 'ADMIN') return (<>
+    
       <div className="flex min-h-screen items-center justify-center px-6">
         <div className="h-10 w-10 rounded-full border-2 border-white/15 border-t-accent animate-spin" aria-label="Loading admin session" />
       </div>
-    </AppShell>
+    
   )
 
   return (
-    <AppShell>
+    
       <div className="page-header flex items-center gap-3">
         <Building2 size={15} className="text-white/40" />
         <h1 className="text-[15px] font-semibold text-white">Clients</h1>
@@ -56,6 +56,7 @@ export default function AdminClientsPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    
+  </>
   )
 }

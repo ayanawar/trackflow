@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Users, UserMinus, ChevronDown, Mail, X, Crown, Shield, Briefcase, User, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import AppShell from '@/components/layout/AppShell'
+
 import { useAuthStore } from '@/lib/authStore'
 import {
   useOrgMembers,
@@ -67,8 +67,8 @@ export default function MembersPage() {
 
   const initials = (name: string) => name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
 
-  return (
-    <AppShell>
+  return (<>
+    
       <div className="page-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/organizations" className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70 mb-1.5 transition-colors">
@@ -223,6 +223,7 @@ export default function MembersPage() {
           </div>
         </div>
       )}
-    </AppShell>
+    
+  </>
   )
 }
