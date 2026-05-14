@@ -79,16 +79,16 @@ export async function deleteTeam(id: string, orgId: string) {
 
 export async function addTeamMember(userId: string, teamId: string) {
   return prisma.teamMember.upsert({
-    where: { userId_teamId: { userId, teamId } },
+    where: { teamId_userId: { userId, teamId } },
     create: { userId, teamId },
     update: {},
   })
 }
 
 export async function removeTeamMember(userId: string, teamId: string) {
-  return prisma.teamMember.delete({ where: { userId_teamId: { userId, teamId } } })
+  return prisma.teamMember.delete({ where: { teamId_userId: { userId, teamId } } })
 }
 
 export async function findTeamMember(userId: string, teamId: string) {
-  return prisma.teamMember.findUnique({ where: { userId_teamId: { userId, teamId } } })
+  return prisma.teamMember.findUnique({ where: { teamId_userId: { userId, teamId } } })
 }
