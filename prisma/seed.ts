@@ -55,23 +55,14 @@ async function main() {
     },
   })
 
-  const acme = await prisma.client.upsert({
-    where: { name_createdById: { name: 'Acme Corp', createdById: user.id } },
-    update: {},
-    create: { name: 'Acme Corp', description: 'Primary demo client', createdById: user.id },
-  })
+  const acme = await prisma.client.findFirst({ where: { name: 'Acme Corp', createdById: user.id } })
+    ?? await prisma.client.create({ data: { name: 'Acme Corp', description: 'Primary demo client', createdById: user.id } })
 
-  const startup = await prisma.client.upsert({
-    where: { name_createdById: { name: 'StartupXYZ', createdById: user.id } },
-    update: {},
-    create: { name: 'StartupXYZ', description: 'Mobile app client', createdById: user.id },
-  })
+  const startup = await prisma.client.findFirst({ where: { name: 'StartupXYZ', createdById: user.id } })
+    ?? await prisma.client.create({ data: { name: 'StartupXYZ', description: 'Mobile app client', createdById: user.id } })
 
-  const team = await prisma.team.upsert({
-    where: { name_createdById: { name: 'Demo Team', createdById: user.id } },
-    update: {},
-    create: { name: 'Demo Team', description: 'Demo manager and employee team', createdById: user.id },
-  })
+  const team = await prisma.team.findFirst({ where: { name: 'Demo Team', createdById: user.id } })
+    ?? await prisma.team.create({ data: { name: 'Demo Team', description: 'Demo manager and employee team', createdById: user.id } })
 
   await prisma.teamMember.upsert({
     where: { teamId_userId: { teamId: team.id, userId: manager.id } },
