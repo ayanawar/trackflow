@@ -1,0 +1,235 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e9]: TrackFlow
+      - navigation [ref=e10]:
+        - link "Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e12]
+          - text: Dashboard
+        - link "Tracker" [ref=e17] [cursor=pointer]:
+          - /url: /tracker
+          - img [ref=e18]
+          - text: Tracker
+        - link "Reports" [ref=e21] [cursor=pointer]:
+          - /url: /reports
+          - img [ref=e22]
+          - text: Reports
+        - link "Projects" [ref=e23] [cursor=pointer]:
+          - /url: /projects
+          - img [ref=e24]
+          - text: Projects
+        - link "Organizations" [ref=e26] [cursor=pointer]:
+          - /url: /organizations
+          - img [ref=e27]
+          - text: Organizations
+        - generic [ref=e31]: Tools
+        - link "AI" [ref=e32] [cursor=pointer]:
+          - /url: /insights
+          - img [ref=e33]
+          - text: AI
+      - generic [ref=e35]:
+        - link "Settings" [ref=e36] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e37]
+          - text: Settings
+        - button "Sign out" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+          - text: Sign out
+        - link "JD John Doe TrackFlow Demo" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e45]: JD
+          - generic [ref=e46]:
+            - paragraph [ref=e47]: John Doe
+            - paragraph [ref=e48]: TrackFlow Demo
+    - main [ref=e49]:
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "Time Tracker" [level=1] [ref=e55]
+          - paragraph [ref=e56]: Saturday, May 16, 2026
+        - button "Add Entry" [ref=e57] [cursor=pointer]:
+          - img [ref=e58]
+          - text: Add Entry
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - textbox "What are you working on?" [ref=e63]: sdfasd
+            - button "Speak to fill description" [ref=e64] [cursor=pointer]:
+              - img [ref=e65]
+          - button "Mobile App" [ref=e326] [cursor=pointer]:
+            - generic [ref=e72]: Mobile App
+          - button "Tag" [ref=e85] [cursor=pointer]:
+            - img [ref=e86]
+            - text: Tag
+          - button "Non-billable" [ref=e89] [cursor=pointer]:
+            - img [ref=e90]
+          - generic [ref=e93]: 00:00:00
+          - button [ref=e328] [cursor=pointer]:
+            - img [ref=e96]
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - button [ref=e101] [cursor=pointer]:
+                - img [ref=e102]
+              - generic [ref=e104]: May 11 – May 17, 2026
+              - button [disabled] [ref=e105]:
+                - img [ref=e106]
+            - button "Submit timesheet" [ref=e108] [cursor=pointer]:
+              - img [ref=e109]
+              - text: Submit timesheet
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - paragraph [ref=e114]: Total hours
+              - paragraph [ref=e115]: 9h 30m
+            - generic [ref=e116]:
+              - paragraph [ref=e117]: Billable
+              - paragraph [ref=e118]: 0m
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: Entries
+              - paragraph [ref=e121]: "6"
+          - generic [ref=e123]:
+            - generic [ref=e124]: Weekly goal — 40h (24%)
+            - generic [ref=e125]: 9h 30m
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]: Mon
+              - generic [ref=e131]: "11"
+              - generic [ref=e134]: 5h 00m
+            - generic [ref=e135]:
+              - generic [ref=e136]: Tue
+              - generic [ref=e137]: "12"
+              - generic [ref=e140]: 3h 00m
+            - generic [ref=e141]:
+              - generic [ref=e142]: Wed
+              - generic [ref=e143]: "13"
+              - generic [ref=e146]: 1h 30m
+            - generic [ref=e147]:
+              - generic [ref=e148]: Thu
+              - generic [ref=e149]: "14"
+              - generic [ref=e151]: —
+            - generic [ref=e152]:
+              - generic [ref=e153]: Fri
+              - generic [ref=e154]: "15"
+              - generic [ref=e156]: —
+            - generic [ref=e157]:
+              - generic [ref=e158]: Sat
+              - generic [ref=e159]: "16"
+              - generic [ref=e161]: —
+            - generic [ref=e162]:
+              - generic [ref=e163]: Sun
+              - generic [ref=e164]: "17"
+              - generic [ref=e166]: —
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e171]:
+                - generic [ref=e172]: Monday
+                - generic [ref=e173]: May 11
+              - generic [ref=e175]: 5h 00m
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e179]:
+                  - paragraph [ref=e180]: Code review & testing
+                  - paragraph [ref=e181]: Mobile App · StartupXYZ
+                - generic [ref=e182]: dev
+                - generic [ref=e183]: 16:24 – 17:24
+                - generic [ref=e184]: 1h 00m
+                - generic [ref=e185]:
+                  - button "Continue" [ref=e186] [cursor=pointer]:
+                    - img [ref=e187]
+                  - button "Edit" [ref=e189] [cursor=pointer]:
+                    - img [ref=e190]
+                  - button "Delete" [ref=e193] [cursor=pointer]:
+                    - img [ref=e194]
+              - generic [ref=e197]:
+                - generic [ref=e199]:
+                  - paragraph [ref=e200]: API integration
+                  - paragraph [ref=e201]: Mobile App · StartupXYZ
+                - generic [ref=e202]: dev
+                - generic [ref=e203]: 12:24 – 16:24
+                - generic [ref=e204]: 4h 00m
+                - generic [ref=e205]:
+                  - button "Continue" [ref=e206] [cursor=pointer]:
+                    - img [ref=e207]
+                  - button "Edit" [ref=e209] [cursor=pointer]:
+                    - img [ref=e210]
+                  - button "Delete" [ref=e213] [cursor=pointer]:
+                    - img [ref=e214]
+          - generic [ref=e217]:
+            - generic [ref=e218]:
+              - generic [ref=e220]:
+                - generic [ref=e221]: Tuesday
+                - generic [ref=e222]: May 12
+              - generic [ref=e224]: 3h 00m
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - generic [ref=e228]:
+                  - paragraph [ref=e229]: Client call – Q3 planning
+                  - paragraph [ref=e230]: Website Redesign · Acme Corp
+                - generic [ref=e231]: meeting
+                - generic [ref=e232]: 14:24 – 14:54
+                - generic [ref=e233]: 30m
+                - generic [ref=e234]:
+                  - button "Continue" [ref=e235] [cursor=pointer]:
+                    - img [ref=e236]
+                  - button "Edit" [ref=e238] [cursor=pointer]:
+                    - img [ref=e239]
+                  - button "Delete" [ref=e242] [cursor=pointer]:
+                    - img [ref=e243]
+              - generic [ref=e246]:
+                - generic [ref=e248]:
+                  - paragraph [ref=e249]: Homepage layout design
+                  - paragraph [ref=e250]: Website Redesign · Acme Corp
+                - generic [ref=e251]: billable
+                - generic [ref=e252]: 12:24 – 14:54
+                - generic [ref=e253]: 2h 30m
+                - generic [ref=e254]:
+                  - button "Continue" [ref=e255] [cursor=pointer]:
+                    - img [ref=e256]
+                  - button "Edit" [ref=e258] [cursor=pointer]:
+                    - img [ref=e259]
+                  - button "Delete" [ref=e262] [cursor=pointer]:
+                    - img [ref=e263]
+          - generic [ref=e266]:
+            - generic [ref=e267]:
+              - generic [ref=e269]:
+                - generic [ref=e270]: Wednesday
+                - generic [ref=e271]: May 13
+              - generic [ref=e273]: 1h 30m
+            - generic [ref=e274]:
+              - generic [ref=e275]:
+                - generic [ref=e277]:
+                  - paragraph [ref=e278]: Feature spec writing
+                  - paragraph [ref=e279]: Website Redesign · Acme Corp
+                - generic [ref=e280]: billable
+                - generic [ref=e281]: 12:54 – 13:54
+                - generic [ref=e282]: 1h 00m
+                - generic [ref=e283]:
+                  - button "Continue" [ref=e284] [cursor=pointer]:
+                    - img [ref=e285]
+                  - button "Edit" [ref=e287] [cursor=pointer]:
+                    - img [ref=e288]
+                  - button "Delete" [ref=e291] [cursor=pointer]:
+                    - img [ref=e292]
+              - generic [ref=e295]:
+                - paragraph [ref=e298]: Team standup
+                - generic [ref=e299]: meeting
+                - generic [ref=e300]: 12:24 – 12:54
+                - generic [ref=e301]: 30m
+                - generic [ref=e302]:
+                  - button "Continue" [ref=e303] [cursor=pointer]:
+                    - img [ref=e304]
+                  - button "Edit" [ref=e306] [cursor=pointer]:
+                    - img [ref=e307]
+                  - button "Delete" [ref=e310] [cursor=pointer]:
+                    - img [ref=e311]
+          - generic [ref=e314]:
+            - generic [ref=e318]:
+              - generic [ref=e319]: Today
+              - generic [ref=e320]: May 16
+            - generic [ref=e321]:
+              - img [ref=e322]
+              - paragraph [ref=e325]: No entries yet — start tracking!
+  - alert [ref=e52]

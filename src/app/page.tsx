@@ -93,7 +93,7 @@ export default function LandingPage() {
 
       {/* ── Nav ─────────────────────────────────────────────── */}
       <nav className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-xl"
-        style={{ borderBottom: '1px solid var(--border)', background: 'rgba(var(--bg-primary),0.85)' }}>
+        style={{ borderBottom: '1px solid var(--border)', background: 'rgb(var(--bg-primary) / 0.85)' }}>
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl animated-gradient flex items-center justify-center shadow-lg animate-float">
             <Clock size={15} className="text-white" />
@@ -366,7 +366,7 @@ export default function LandingPage() {
             </div>
             <span className="text-sm font-bold gradient-text">TrackFlow</span>
           </div>
-          <p className="text-xs" style={{ color: 'rgb(var(--text-faint))' }}>© 2025 TrackFlow. All rights reserved.</p>
+          <p className="text-xs" style={{ color: 'rgb(var(--text-faint))' }}>© 2026 TrackFlow. All rights reserved.</p>
           <div className="flex items-center gap-5 text-xs" style={{ color: 'rgb(var(--text-faint))' }}>
             <Link href="/auth/login" className="hover:text-white transition-colors">Sign in</Link>
             <Link href="/auth/register" className="hover:text-white transition-colors">Register</Link>

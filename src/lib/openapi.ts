@@ -6,6 +6,7 @@ const r401 = { description: 'Not authenticated', content: Err }
 const r403 = { description: 'Forbidden — insufficient role', content: Err }
 const r404 = { description: 'Not found', content: Err }
 const r400 = { description: 'Validation error', content: Err }
+const r409 = { description: 'Conflict', content: Err }
 const r429 = { description: 'Rate limit exceeded', content: Err }
 
 function param(name: string, desc?: string) {
@@ -88,11 +89,19 @@ export function getOpenAPISpec() {
         Tag: {
           type: 'object',
           properties: {
-            id:        { type: 'string' },
-            name:      { type: 'string' },
-            color:     { type: 'string', example: '#888888' },
-            userId:    { type: 'string' },
-            createdAt: { type: 'string', format: 'date-time' },
+            id:             { type: 'string' },
+            name:           { type: 'string' },
+            normalizedName: { type: 'string', nullable: true },
+            color:          { type: 'string', example: '#888888' },
+            status:         { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+            workspaceId:    { type: 'string' },
+            userId:         { type: 'string' },
+            createdById:    { type: 'string' },
+            updatedById:    { type: 'string', nullable: true },
+            usageCount:     { type: 'integer' },
+            canDelete:      { type: 'boolean' },
+            createdAt:      { type: 'string', format: 'date-time' },
+            updatedAt:      { type: 'string', format: 'date-time' },
           },
         },
         TimeEntry: {
@@ -190,6 +199,19 @@ export function getOpenAPISpec() {
             userId:      { type: 'string', nullable: true },
             teamId:      { type: 'string', nullable: true },
             accessLevel: { type: 'string', enum: ['VIEW', 'MANAGE', 'REPORT'] },
+          },
+        },
+        SecurityEvent: {
+          type: 'object',
+          properties: {
+            id:        { type: 'string' },
+            type:      { type: 'string' },
+            userId:    { type: 'string', nullable: true },
+            email:     { type: 'string', nullable: true },
+            ipAddress: { type: 'string', nullable: true },
+            userAgent: { type: 'string', nullable: true },
+            metadata:  { type: 'object', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
           },
         },
       },
@@ -445,26 +467,39 @@ export function getOpenAPISpec() {
       // ─── Tags ────────────────────────────────────────────────────
       '/tags': {
         get: {
-          tags: ['Tags'], summary: 'List tags for current user', security: auth,
-          responses: { 200: { description: 'Tags list', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Tag' } } } } }, 401: r401 },
+          tags: ['Tags'], summary: 'List workspace tags', security: auth,
+          parameters: [
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['active', 'inactive', 'all'], default: 'active' } },
+            { name: 'q', in: 'query', schema: { type: 'string', maxLength: 50 } },
+            { name: 'includeUsage', in: 'query', schema: { type: 'boolean' } },
+          ],
+          responses: { 200: { description: 'Tags list', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Tag' } } } } }, 401: r401, 403: r403 },
         },
         post: {
-          tags: ['Tags'], summary: 'Create a tag', security: auth,
+          tags: ['Tags'], summary: 'Create a workspace tag', security: auth,
           requestBody: json({ type: 'object', required: ['name'], properties: { name: { type: 'string', minLength: 1, maxLength: 50 }, color: { type: 'string' } } }),
-          responses: { 201: { description: 'Tag created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 400: r400, 401: r401 },
+          responses: { 200: { description: 'Existing duplicate active tag returned', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 201: { description: 'Tag created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 400: r400, 401: r401, 409: r409 },
         },
       },
 
       '/tags/{id}': {
         parameters: [param('id', 'Tag ID')],
         patch: {
-          tags: ['Tags'], summary: 'Update a tag', security: auth,
-          requestBody: json({ type: 'object', properties: { name: { type: 'string' }, color: { type: 'string' } } }),
-          responses: { 200: { description: 'Updated tag', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 400: r400, 401: r401, 404: r404 },
+          tags: ['Tags'], summary: 'Update a tag (MANAGER+)', security: auth,
+          requestBody: json({ type: 'object', properties: { name: { type: 'string' }, color: { type: 'string' }, status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] } } }),
+          responses: { 200: { description: 'Updated tag', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 400: r400, 401: r401, 403: r403, 404: r404, 409: r409 },
         },
         delete: {
-          tags: ['Tags'], summary: 'Delete a tag', security: auth,
-          responses: { 204: { description: 'Deleted' }, 401: r401, 404: r404 },
+          tags: ['Tags'], summary: 'Delete an unused tag (MANAGER+)', security: auth,
+          responses: { 204: { description: 'Deleted' }, 401: r401, 403: r403, 404: r404, 409: r409 },
+        },
+      },
+
+      '/tags/{id}/deactivate': {
+        parameters: [param('id', 'Tag ID')],
+        post: {
+          tags: ['Tags'], summary: 'Deactivate a tag (MANAGER+)', security: auth,
+          responses: { 200: { description: 'Deactivated tag', content: { 'application/json': { schema: { $ref: '#/components/schemas/Tag' } } } }, 401: r401, 403: r403, 404: r404 },
         },
       },
 

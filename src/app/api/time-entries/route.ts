@@ -13,7 +13,12 @@ export async function GET(req: NextRequest) {
     if (!session) return unauthorized()
     const { searchParams } = new URL(req.url)
     const limit = parseInt(searchParams.get('limit') ?? '100')
-    return ok(await listAccessibleEntries({ userId: session.userId, role: session.role as Role }, limit))
+    const tagId = searchParams.get('tagId')
+    return ok(await listAccessibleEntries(
+      { userId: session.userId, role: session.role as Role },
+      limit,
+      { tagId },
+    ))
   } catch (err) {
     console.error('[time-entries:GET]', err)
     return serverError()

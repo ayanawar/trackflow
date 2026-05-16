@@ -1,15 +1,15 @@
 import * as entryRepo from '@/repositories/timeEntry.repository'
-import * as tagRepo from '@/repositories/tag.repository'
 import { invalidateStatsCache } from '@/services/stats.service'
 import { canAccessProject } from '@/services/authorization.service'
+import { resolveActiveTagForUser } from '@/services/tag.service'
 import type { Role } from '@/types'
 
-export async function listEntries(userId: string, limit = 100) {
-  return entryRepo.findAllByUser(userId, limit)
+export async function listEntries(userId: string, limit = 100, filters: { tagId?: string | null } = {}) {
+  return entryRepo.findAllByUser(userId, limit, filters)
 }
 
-export async function listAccessibleEntries(user: { userId: string; role: Role }, limit = 100) {
-  return entryRepo.findAllAccessible(user, limit)
+export async function listAccessibleEntries(user: { userId: string; role: Role }, limit = 100, filters: { tagId?: string | null } = {}) {
+  return entryRepo.findAllAccessible(user, limit, filters)
 }
 
 export async function getEntry(id: string, userId: string) {
@@ -24,6 +24,7 @@ export async function createEntry(userId: string, data: {
   description?: string
   projectId?: string | null
   taskId?: string | null
+  tagId?: string | null
   tag?: string | null
   billable?: boolean
   startTime: string
@@ -36,9 +37,9 @@ export async function createEntry(userId: string, data: {
   await entryRepo.stopRunning(userId, new Date())
 
   let tagId: string | null = null
-  if (data.tag) {
-    const t = await tagRepo.upsertByName(data.tag, userId)
-    tagId = t.id
+  if (data.tagId || data.tag) {
+    const t = await resolveActiveTagForUser(userId, { tagId: data.tagId, tag: data.tag })
+    tagId = t?.id ?? null
   }
 
   const isRunning = !data.endTime
@@ -79,6 +80,7 @@ export async function updateEntry(id: string, userId: string, data: {
   description?: string
   projectId?: string | null
   taskId?: string | null
+  tagId?: string | null
   tag?: string | null
   billable?: boolean
   startTime?: string
@@ -88,12 +90,12 @@ export async function updateEntry(id: string, userId: string, data: {
   if (!entry) return null
 
   let tagId = entry.tagId
-  if (data.tag !== undefined) {
-    if (data.tag === null) {
+  if (data.tagId !== undefined || data.tag !== undefined) {
+    if (data.tagId === null || data.tag === null) {
       tagId = null
     } else {
-      const t = await tagRepo.upsertByName(data.tag, userId)
-      tagId = t.id
+      const t = await resolveActiveTagForUser(userId, { tagId: data.tagId, tag: data.tag })
+      tagId = t?.id ?? null
     }
   }
 
@@ -125,6 +127,7 @@ export async function updateAccessibleEntry(id: string, user: { userId: string; 
   description?: string
   projectId?: string | null
   taskId?: string | null
+  tagId?: string | null
   tag?: string | null
   billable?: boolean
   startTime?: string
@@ -139,12 +142,12 @@ export async function updateAccessibleEntry(id: string, user: { userId: string; 
   }
 
   let tagId = entry.tagId
-  if (data.tag !== undefined) {
-    if (data.tag === null) {
+  if (data.tagId !== undefined || data.tag !== undefined) {
+    if (data.tagId === null || data.tag === null) {
       tagId = null
     } else {
-      const t = await tagRepo.upsertByName(data.tag, entry.userId)
-      tagId = t.id
+      const t = await resolveActiveTagForUser(entry.userId, { tagId: data.tagId, tag: data.tag })
+      tagId = t?.id ?? null
     }
   }
 

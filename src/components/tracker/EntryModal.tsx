@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { X, DollarSign } from 'lucide-react'
 import api from '@/lib/apiClient'
 import { toLocalTime, cn } from '@/lib/utils'
+import TagInput from '@/components/tracker/TagInput'
 import type { TimeEntry, Project } from '@/types'
 
 interface FormData {
@@ -135,7 +136,9 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
 
           <div>
             <label className="label">Tag</label>
-            <input className="input" placeholder="e.g. meeting, dev, review" {...register('tag')} />
+            <div className="pt-1">
+              <TagInput value={watch('tag') || ''} onSelect={value => setValue('tag', value)} />
+            </div>
           </div>
 
           {/* Billable toggle */}
