@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, Square, Pause, Folder, DollarSign, Mic, MicOff } from 'lucide-react'
+import { Play, Square, Pause, Folder, DollarSign, Mic, MicOff, Check } from 'lucide-react'
 import TagInput from '@/components/tracker/TagInput'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/apiClient'
@@ -24,6 +24,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
   const [speechSupported, setSpeechSupported] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const projectPickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setSpeechSupported(
@@ -31,6 +32,19 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
     )
   }, [])
+
+  useEffect(() => {
+    if (!showProjects) return
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!projectPickerRef.current?.contains(event.target as Node)) {
+        setShowProjects(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [showProjects])
 
   const toggleSpeech = useCallback(() => {
     if (isListening) {
@@ -150,26 +164,61 @@ export default function TimerBar({ projects, runningEntry }: Props) {
       </div>
 
       {/* Project picker */}
-      <div className="relative w-full md:w-auto">
+      <div className="relative w-full md:w-auto" ref={projectPickerRef}>
         <button
+          type="button"
+          aria-expanded={showProjects}
+          aria-haspopup="listbox"
           className={cn(
-            'flex min-h-9 w-full items-center justify-center gap-1.5 truncate px-2.5 py-1.5 rounded-lg text-xs bg-white/5 border transition-all md:w-auto',
+            'flex min-h-9 w-full items-center justify-center gap-1.5 truncate rounded-lg border px-2.5 py-1.5 text-xs transition-all focus-ring md:w-auto md:max-w-[180px]',
             activeProject
-              ? 'text-white/70 border-white/10 hover:border-white/20'
-              : 'text-white/50 border-orange-500/40 hover:border-orange-500/60'
+              ? 'border-[color:var(--border)] bg-[rgb(var(--accent)_/_0.04)] text-[rgb(var(--text-muted))] hover:border-[color:var(--border-strong)] hover:text-[rgb(var(--text-base))]'
+              : 'border-orange-500/45 bg-orange-500/5 text-[rgb(var(--text-muted))] hover:border-orange-500/70 hover:text-[rgb(var(--text-base))]'
           )}
           onClick={() => !isActive && setShowProjects(v => !v)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') setShowProjects(false)
+          }}
         >
           {activeProject
             ? <><span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: activeProject.color }} /><span className="truncate">{activeProject.name}</span></>
             : <><Folder size={11} /><span>Project <span className="text-orange-400">*</span></span></>}
         </button>
         {showProjects && (
-          <div className="absolute top-full left-0 mt-1 w-full min-w-48 bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-xl p-1 z-30 shadow-xl md:w-48">
-            <button className="w-full text-left text-xs px-3 py-2 rounded-lg text-white/50 hover:bg-white/5 hover:text-white" onClick={() => { setProjectId(null); setShowProjects(false) }}>No project</button>
+          <div
+            className="absolute left-0 top-full z-30 mt-2 w-full min-w-64 rounded-xl border border-[color:var(--border-strong)] bg-[rgb(var(--bg-card))] p-1.5 shadow-[var(--shadow-lg)] md:w-64"
+            role="listbox"
+            aria-label="Project"
+          >
+            <button
+              type="button"
+              role="option"
+              aria-selected={!projectId}
+              className="flex min-h-9 w-full items-center justify-between gap-3 rounded-lg px-3 text-left text-sm text-[rgb(var(--text-muted))] transition-colors hover:bg-[rgb(var(--accent)_/_0.07)] hover:text-[rgb(var(--text-base))] focus-ring"
+              onClick={() => { setProjectId(null); setShowProjects(false) }}
+            >
+              <span className="truncate">No project</span>
+              {!projectId && <Check size={13} className="flex-shrink-0 text-[rgb(var(--accent))]" />}
+            </button>
             {projects.map(p => (
-              <button key={p.id} className={cn('w-full text-left text-xs px-3 py-2 rounded-lg flex items-center gap-2 transition-colors', p.id === projectId ? 'bg-accent/10 text-accent' : 'text-white hover:bg-white/5')} onClick={() => { setProjectId(p.id); setShowProjects(false) }}>
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} /><span className="truncate">{p.name}</span>
+              <button
+                key={p.id}
+                type="button"
+                role="option"
+                aria-selected={p.id === projectId}
+                className={cn(
+                  'flex min-h-9 w-full items-center justify-between gap-3 rounded-lg px-3 text-left text-sm transition-colors focus-ring',
+                  p.id === projectId
+                    ? 'bg-[rgb(var(--accent)_/_0.12)] text-[rgb(var(--accent))]'
+                    : 'text-[rgb(var(--text-base))] hover:bg-[rgb(var(--accent)_/_0.07)]'
+                )}
+                onClick={() => { setProjectId(p.id); setShowProjects(false) }}
+              >
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: p.color }} />
+                  <span className="truncate">{p.name}</span>
+                </span>
+                {p.id === projectId && <Check size={13} className="flex-shrink-0" />}
               </button>
             ))}
           </div>
