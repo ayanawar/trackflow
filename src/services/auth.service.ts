@@ -6,6 +6,7 @@ import * as refreshTokenRepo from '@/repositories/refreshToken.repository'
 import * as passwordResetTokenRepo from '@/repositories/passwordResetToken.repository'
 import * as inviteTokenRepo from '@/repositories/inviteToken.repository'
 import { recordSecurityEvent } from '@/services/securityEvent.service'
+import { sendPasswordResetEmail, sendInviteEmail } from '@/lib/mailer'
 import type { Role } from '@/types'
 
 function hashToken(raw: string): string {
@@ -144,7 +145,7 @@ export async function forgotPassword(email: string) {
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
   await passwordResetTokenRepo.create({ tokenHash: hashToken(raw), userId: user.id, expiresAt })
 
-  console.log('[password-reset] token for', email, ':', raw)
+  await sendPasswordResetEmail(email, raw)
 }
 
 export async function resetPassword(rawToken: string, newPassword: string) {
@@ -180,8 +181,15 @@ export async function createInvite(invitedById: string, email: string, role: str
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
   await inviteTokenRepo.create({ tokenHash: hashToken(raw), email, role: role as Role, invitedById, expiresAt })
 
+  const inviter = await userRepo.findById(invitedById)
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/invite?token=${raw}`
-  console.log('[invite] link for', email, 'role:', role, ':', inviteUrl)
+
+  await sendInviteEmail(email, raw, {
+    inviterName: inviter?.name ?? 'Someone',
+    workspace: inviter?.workspace ?? 'My Workspace',
+    role,
+  })
+
   return { inviteUrl, email, role }
 }
 
