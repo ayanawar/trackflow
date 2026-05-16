@@ -4,19 +4,19 @@ import type { Role } from '@/types'
 
 const include = { project: true, tag: true } as const
 
-export async function findAllByUser(userId: string, limit = 100) {
+export async function findAllByUser(userId: string, limit = 100, filters: { tagId?: string | null } = {}) {
   return prisma.timeEntry.findMany({
-    where: { userId },
+    where: { userId, ...(filters.tagId ? { tagId: filters.tagId } : {}) },
     orderBy: { startTime: 'desc' },
     take: Math.min(limit, 500),
     include,
   })
 }
 
-export async function findAllAccessible(user: { userId: string; role: Role }, limit = 100) {
+export async function findAllAccessible(user: { userId: string; role: Role }, limit = 100, filters: { tagId?: string | null } = {}) {
   const where = await timeEntryAccessWhere(user)
   return prisma.timeEntry.findMany({
-    where,
+    where: { AND: [where, filters.tagId ? { tagId: filters.tagId } : {}] },
     orderBy: { startTime: 'desc' },
     take: Math.min(limit, 500),
     include,

@@ -7,13 +7,13 @@ interface Props {
   disabled?: boolean
 }
 
-export default function GoogleSignInButton({ onSuccess, onError }: Props) {
+export default function GoogleSignInButton({ onSuccess, onError, disabled }: Props) {
   return (
-    <div className="w-full flex justify-center">
+    <div className="google-signin-shell w-full max-w-[352px] mx-auto" aria-disabled={disabled || undefined}>
       <GoogleLogin
         onSuccess={(cr) => onSuccess(cr.credential!)}
         onError={() => onError('Google sign-in was cancelled.')}
-        theme="filled_black"
+        theme="outline"
         shape="rectangular"
         text="continue_with"
         width="352"

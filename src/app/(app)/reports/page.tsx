@@ -6,6 +6,7 @@ import api from '@/lib/apiClient'
 
 import { formatDuration, formatTimeRange } from '@/lib/utils'
 import { useAuthStore } from '@/lib/authStore'
+import { useTags } from '@/hooks/useTags'
 import type { TimeEntry, Project } from '@/types'
 
 type Range = '7' | '30' | '90'
@@ -13,6 +14,7 @@ type Range = '7' | '30' | '90'
 export default function ReportsPage() {
   const [range, setRange] = useState<Range>('7')
   const [projectFilter, setProjectFilter] = useState('')
+  const [tagFilter, setTagFilter] = useState('')
   const { user } = useAuthStore()
 
   const { data: entries = [] } = useQuery<TimeEntry[]>({
@@ -24,6 +26,7 @@ export default function ReportsPage() {
     queryKey: ['projects'],
     queryFn: () => api.get('/projects').then(r => r.data),
   })
+  const { data: tags = [] } = useTags()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - Number(range))
@@ -31,7 +34,8 @@ export default function ReportsPage() {
   const filtered = entries.filter(e => {
     const inRange = new Date(e.startTime) >= cutoff
     const inProject = !projectFilter || e.projectId === projectFilter
-    return inRange && inProject && !e.isRunning
+    const inTag = !tagFilter || e.tagId === tagFilter
+    return inRange && inProject && inTag && !e.isRunning
   })
 
   const totalSecs = filtered.reduce((s, e) => s + (e.duration ?? 0), 0)
@@ -95,6 +99,10 @@ export default function ReportsPage() {
             <option value="">All projects</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+          <select className="input w-full py-1.5 text-xs sm:w-44" value={tagFilter} onChange={e => setTagFilter(e.target.value)}>
+            <option value="">All tags</option>
+            {tags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
         </div>
 
         {/* Summary cards */}
@@ -137,7 +145,7 @@ export default function ReportsPage() {
                   </td>
                   <td className="px-4 py-3">
                     {e.tag
-                      ? <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50">{e.tag.name}</span>
+                      ? <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50">{e.tag.name}{e.tag.status === 'INACTIVE' ? ' (inactive)' : ''}</span>
                       : <span className="text-white/30">—</span>}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-white/40">{formatTimeRange(e.startTime, e.endTime)}</td>

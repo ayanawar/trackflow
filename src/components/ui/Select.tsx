@@ -47,7 +47,12 @@ export default function Select<T extends string>({ value, onChange, options, cla
               key={opt.value}
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false) }}
-              className="flex w-full items-center justify-between px-3 py-2 text-[13px] text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+              className={cn(
+                'flex w-full items-center justify-between px-3 py-2 text-[13px] transition-colors',
+                opt.value === value
+                  ? 'bg-accent/10 text-accent'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              )}
             >
               {opt.label}
               {opt.value === value && <Check size={13} className="text-accent" />}

@@ -6,6 +6,8 @@ import {
   resetPasswordSchema,
   createInviteSchema,
   acceptInviteSchema,
+  tagSchema,
+  tagUpdateSchema,
 } from '@/lib/schemas'
 
 describe('loginSchema', () => {
@@ -82,5 +84,27 @@ describe('acceptInviteSchema', () => {
   })
   it('rejects missing name', () => {
     expect(acceptInviteSchema.safeParse({ token: 'abc', password: 'pass1234' }).success).toBe(false)
+  })
+})
+
+describe('tag schemas', () => {
+  it('trims valid tag names and accepts default color', () => {
+    const result = tagSchema.safeParse({ name: '  QA Review  ' })
+    expect(result.success && result.data.name).toBe('QA Review')
+    expect(result.success && result.data.color).toBe('#888888')
+  })
+
+  it('rejects blank and overlong tag names', () => {
+    expect(tagSchema.safeParse({ name: '   ' }).success).toBe(false)
+    expect(tagSchema.safeParse({ name: 'a'.repeat(51) }).success).toBe(false)
+  })
+
+  it('rejects invalid tag colors', () => {
+    expect(tagSchema.safeParse({ name: 'QA', color: 'blue' }).success).toBe(false)
+  })
+
+  it('requires at least one update field', () => {
+    expect(tagUpdateSchema.safeParse({}).success).toBe(false)
+    expect(tagUpdateSchema.safeParse({ status: 'INACTIVE' }).success).toBe(true)
   })
 })

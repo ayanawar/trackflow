@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+const normalizeTagName = (name: string) => name.trim().replace(/\s+/g, ' ')
+const tagKey = (name: string) => normalizeTagName(name).toLocaleLowerCase()
 
 async function main() {
   console.log('Seeding database...')
@@ -93,10 +95,24 @@ async function main() {
     create: { clientId: acme.id, teamId: team.id, accessLevel: 'REPORT' },
   })
 
-  // Create tags
-  const t1 = await prisma.tag.create({ data: { name: 'billable', color: '#4f8ef7', userId: user.id } })
-  const t2 = await prisma.tag.create({ data: { name: 'meeting', color: '#fbbf24', userId: user.id } })
-  const t3 = await prisma.tag.create({ data: { name: 'dev', color: '#34d399', userId: user.id } })
+  // Create shared workspace tags
+  const workspaceId = user.activeOrgId ? `org:${user.activeOrgId}` : `workspace:${user.workspace}`
+  const upsertTag = (name: string, color: string) => prisma.tag.upsert({
+    where: { workspaceId_normalizedName: { workspaceId, normalizedName: tagKey(name) } },
+    update: { name: normalizeTagName(name), color, status: 'ACTIVE', updatedById: user.id },
+    create: {
+      name: normalizeTagName(name),
+      normalizedName: tagKey(name),
+      color,
+      workspaceId,
+      status: 'ACTIVE',
+      userId: user.id,
+      updatedById: user.id,
+    },
+  })
+  const t1 = await upsertTag('billable', '#4f8ef7')
+  const t2 = await upsertTag('meeting', '#fbbf24')
+  const t3 = await upsertTag('dev', '#34d399')
 
   // Create time entries
   const now = new Date()

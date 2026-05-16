@@ -20,6 +20,7 @@
 
   --accent:        99  102 241;
   --accent-glow:   rgba(99,102,241,0.25);
+  --selection-bg:  rgba(99,102,241,0.75);
 
   --shadow-sm:     0 2px 8px rgba(0,0,0,0.4);
   --shadow-md:     0 8px 32px rgba(0,0,0,0.5);
@@ -46,6 +47,7 @@ html.light {
 
   --accent:        79  70  229;
   --accent-glow:   rgba(79,70,229,0.2);
+  --selection-bg:  rgba(79,70,229,0.82);
 
   --shadow-sm:     0 2px 8px rgba(0,0,0,0.06);
   --shadow-md:     0 8px 32px rgba(0,0,0,0.1);
@@ -75,16 +77,22 @@ body {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--accent), 0.25);
+  background: rgb(var(--accent) / 0.25);
   border-radius: 4px;
   transition: background 0.2s;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(var(--accent), 0.5); }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent) / 0.5); }
 
 /* ─── Selection ─────────────────────────────────────────── */
 ::selection {
-  background: rgba(var(--accent), 0.3);
-  color: rgb(var(--text-base));
+  background: var(--selection-bg);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+
+::-moz-selection {
+  background: var(--selection-bg);
+  color: #fff;
 }
 
 /* ─── Light-mode text overrides ─────────────────────────── */
@@ -119,6 +127,63 @@ html.light textarea::placeholder {
   color: rgb(var(--text-faint)) !important;
 }
 
+html.light .btn-primary,
+html.light .btn-primary *,
+html.light .btn-danger,
+html.light .btn-danger *,
+html.light .bg-accent,
+html.light .bg-accent * {
+  color: #fff !important;
+}
+
+html.light .btn-primary [class*="border-white"],
+html.light .btn-danger [class*="border-white"],
+html.light .bg-accent [class*="border-white"] {
+  border-color: rgba(255,255,255,0.35) !important;
+}
+
+/* ─── Light-mode interactive (hover/focus) overrides ────── */
+/* These have higher specificity than the base bg/text rules above so they
+   win on :hover and restore visible interactive feedback in light mode.    */
+html.light [class*="hover:bg-white/"]:hover {
+  background-color: rgba(0,0,0,0.06) !important;
+}
+html.light [class~="hover:text-white"]:hover {
+  color: rgb(var(--text-base)) !important;
+}
+html.light [class*="hover:text-white/"]:hover {
+  color: rgb(var(--text-muted)) !important;
+}
+html.light [class*="hover:border-white/"]:hover {
+  border-color: var(--border-strong) !important;
+}
+
+/* ─── Button motion ─────────────────────────────────────── */
+:where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger) {
+  transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger):not(:disabled):not([aria-disabled="true"]):hover {
+  transform: translateY(-1px);
+}
+
+:where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger):not(:disabled):not([aria-disabled="true"]):active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger) {
+    transition-duration: 1ms;
+  }
+
+  :where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger):not(:disabled):not([aria-disabled="true"]):hover,
+  :where(button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-ghost, a.btn-danger):not(:disabled):not([aria-disabled="true"]):active {
+    transform: none;
+  }
+}
+
 /* ─── Component Classes ─────────────────────────────────── */
 @layer components {
 
@@ -135,20 +200,33 @@ html.light textarea::placeholder {
     box-shadow: var(--shadow-md);
   }
   .card-glow:hover {
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent), 0.2), 0 0 24px rgba(var(--accent), 0.1);
+    box-shadow: var(--shadow-md), 0 0 0 1px rgb(var(--accent) / 0.2), 0 0 24px rgb(var(--accent) / 0.1);
   }
 
   /* Buttons */
   .btn-primary {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
-    background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent), 0.8));
-    box-shadow: 0 4px 14px rgba(var(--accent), 0.35);
+    background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent) / 0.8));
+    box-shadow: 0 4px 14px rgb(var(--accent) / 0.35);
   }
   .btn-primary:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(var(--accent), 0.45);
+    box-shadow: 0 6px 20px rgb(var(--accent) / 0.45);
   }
   .btn-primary:active { transform: scale(0.96); }
+
+  .btn-secondary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: rgb(var(--bg-elevated));
+    border: 1px solid var(--border-strong);
+    color: rgb(var(--text-base));
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: rgb(var(--accent) / 0.35);
+    background: rgb(var(--accent) / 0.08);
+    color: rgb(var(--text-base));
+  }
 
   .btn-ghost {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl text-sm font-medium transition-all;
@@ -158,8 +236,8 @@ html.light textarea::placeholder {
   }
   .btn-ghost:hover {
     color: rgb(var(--text-base));
-    border-color: rgba(var(--accent), 0.4);
-    background: rgba(var(--accent), 0.06);
+    border-color: rgb(var(--accent) / 0.4);
+    background: rgb(var(--accent) / 0.06);
   }
 
   .btn-danger {
@@ -169,18 +247,41 @@ html.light textarea::placeholder {
   }
   .btn-danger:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(248,113,113,0.4); }
 
+  .google-signin-shell {
+    @apply flex min-h-11 items-center justify-center rounded-xl transition-all;
+    background: rgb(var(--bg-card));
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-sm);
+  }
+  .google-signin-shell:hover:not([aria-disabled="true"]) {
+    background: rgb(var(--accent) / 0.06);
+    border-color: rgb(var(--accent) / 0.35);
+    box-shadow: 0 8px 24px rgb(var(--accent) / 0.14);
+    transform: translateY(-1px);
+  }
+  .google-signin-shell[aria-disabled="true"] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .google-signin-shell > div {
+    width: 100% !important;
+  }
+  .google-signin-shell iframe {
+    border-radius: 0.75rem !important;
+  }
+
   /* Inputs */
   .input {
     @apply w-full rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all;
-    background: rgba(var(--accent), 0.04);
+    background: rgb(var(--accent) / 0.04);
     border: 1px solid var(--border-strong);
     color: rgb(var(--text-base));
   }
   .input::placeholder { color: rgb(var(--text-faint)); }
   .input:focus {
-    border-color: rgba(var(--accent), 0.6);
-    background: rgba(var(--accent), 0.07);
-    box-shadow: 0 0 0 3px rgba(var(--accent), 0.12);
+    border-color: rgb(var(--accent) / 0.6);
+    background: rgb(var(--accent) / 0.07);
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.12);
   }
 
   /* Labels */
@@ -195,12 +296,12 @@ html.light textarea::placeholder {
     color: rgb(var(--text-muted));
   }
   .nav-link:hover {
-    background: rgba(var(--accent), 0.08);
+    background: rgb(var(--accent) / 0.08);
     color: rgb(var(--text-base));
     transform: translateX(2px);
   }
   .nav-link.active {
-    background: rgba(var(--accent), 0.12);
+    background: rgb(var(--accent) / 0.12);
     color: rgb(var(--accent));
     box-shadow: inset 3px 0 0 rgb(var(--accent));
   }
@@ -226,7 +327,7 @@ html.light textarea::placeholder {
   .glass {
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    background: rgba(var(--bg-card), 0.7);
+    background: rgb(var(--bg-card) / 0.7);
     border: 1px solid var(--border);
   }
 
@@ -241,9 +342,9 @@ html.light textarea::placeholder {
   /* Glow badge */
   .badge-glow {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold;
-    background: rgba(var(--accent), 0.15);
+    background: rgb(var(--accent) / 0.15);
     color: rgb(var(--accent));
-    border: 1px solid rgba(var(--accent), 0.25);
+    border: 1px solid rgb(var(--accent) / 0.25);
   }
 
   /* Shimmer loading */
@@ -267,7 +368,7 @@ html.light textarea::placeholder {
 
   /* Focus ring */
   .focus-ring:focus-visible {
-    outline: 2px solid rgba(var(--accent), 0.8);
+    outline: 2px solid rgb(var(--accent) / 0.8);
     outline-offset: 2px;
   }
 
@@ -318,8 +419,8 @@ html.light nav.fixed {
   100% { background-position: 200% 0; }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent), 0.5); }
-  50%       { box-shadow: 0 0 0 10px rgba(var(--accent), 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--accent) / 0.5); }
+  50%       { box-shadow: 0 0 0 10px rgb(var(--accent) / 0); }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }

@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - img [ref=e6]
+        - generic [ref=e9]: TrackFlow
+      - navigation [ref=e10]:
+        - link "Dashboard" [ref=e11] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e12]
+          - text: Dashboard
+        - link "Tracker" [ref=e17] [cursor=pointer]:
+          - /url: /tracker
+          - img [ref=e18]
+          - text: Tracker
+        - link "Reports" [ref=e21] [cursor=pointer]:
+          - /url: /reports
+          - img [ref=e22]
+          - text: Reports
+        - link "Projects" [ref=e23] [cursor=pointer]:
+          - /url: /projects
+          - img [ref=e24]
+          - text: Projects
+        - link "Organizations" [ref=e26] [cursor=pointer]:
+          - /url: /organizations
+          - img [ref=e27]
+          - text: Organizations
+        - generic [ref=e31]: Tools
+        - link "AI" [ref=e32] [cursor=pointer]:
+          - /url: /insights
+          - img [ref=e33]
+          - text: AI
+      - generic [ref=e35]:
+        - link "Settings" [ref=e36] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e37]
+          - text: Settings
+        - button "Sign out" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+          - text: Sign out
+        - link "JD John Doe TrackFlow Demo" [ref=e44] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e45]: JD
+          - generic [ref=e46]:
+            - paragraph [ref=e47]: John Doe
+            - paragraph [ref=e48]: TrackFlow Demo
+    - main [ref=e49]:
+      - generic "Loading session" [ref=e51]
+  - alert [ref=e52]

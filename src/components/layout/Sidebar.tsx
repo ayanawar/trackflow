@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users, Tags } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 
@@ -35,7 +35,7 @@ export default function Sidebar() {
     <>
       {/* ── Mobile top bar ──────────────────────────── */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden"
-        style={{ borderColor: 'var(--border)', background: 'rgba(var(--bg-secondary), 0.95)' }}>
+        style={{ borderColor: 'var(--border)', background: 'rgb(var(--bg-secondary) / 0.95)' }}>
         <Link href="/tracker" className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-lg animated-gradient flex items-center justify-center flex-shrink-0 shadow-lg">
             <Clock size={14} className="text-white" />
@@ -62,7 +62,7 @@ export default function Sidebar() {
           'fixed inset-x-0 bottom-0 z-40 grid border-t px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden',
           `grid-cols-${mobileItems.length}`
         )}
-        style={{ borderColor: 'var(--border)', background: 'rgba(var(--bg-secondary), 0.95)' }}
+        style={{ borderColor: 'var(--border)', background: 'rgb(var(--bg-secondary) / 0.95)' }}
       >
         {mobileItems.map(({ href, icon: Icon, label }) => {
           const active = pathname.startsWith(href)
@@ -120,11 +120,19 @@ export default function Sidebar() {
             </Link>
           ))}
 
-          {user?.role === 'ADMIN' && (
+          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
             <>
               <div className="mt-3 mb-1 px-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'rgb(var(--text-faint))' }}>
-                Admin
+                Manage
               </div>
+              <Link href="/admin/tags" className={cn('nav-link', pathname.startsWith('/admin/tags') && 'active')}>
+                <Tags size={15} />Tags
+              </Link>
+            </>
+          )}
+
+          {user?.role === 'ADMIN' && (
+            <>
               <Link href="/admin/users" className={cn('nav-link', pathname.startsWith('/admin/users') && 'active')}>
                 <ShieldCheck size={15} />User Management
               </Link>

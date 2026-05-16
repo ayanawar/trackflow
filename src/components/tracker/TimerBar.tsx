@@ -65,6 +65,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
     if (runningEntry) {
       setDescription(runningEntry.description ?? '')
       setProjectId(runningEntry.projectId)
+      setTag(runningEntry.tag?.name ?? '')
       setBillable(runningEntry.billable)
     }
 
@@ -86,6 +87,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['timeEntries'] })
+    qc.invalidateQueries({ queryKey: ['tags'] })
     qc.invalidateQueries({ queryKey: ['stats'] })
   }
 
@@ -166,7 +168,7 @@ export default function TimerBar({ projects, runningEntry }: Props) {
           <div className="absolute top-full left-0 mt-1 w-full min-w-48 bg-[rgb(var(--bg-secondary))] border border-white/10 rounded-xl p-1 z-30 shadow-xl md:w-48">
             <button className="w-full text-left text-xs px-3 py-2 rounded-lg text-white/50 hover:bg-white/5 hover:text-white" onClick={() => { setProjectId(null); setShowProjects(false) }}>No project</button>
             {projects.map(p => (
-              <button key={p.id} className="w-full text-left text-xs px-3 py-2 rounded-lg text-white hover:bg-white/5 flex items-center gap-2" onClick={() => { setProjectId(p.id); setShowProjects(false) }}>
+              <button key={p.id} className={cn('w-full text-left text-xs px-3 py-2 rounded-lg flex items-center gap-2 transition-colors', p.id === projectId ? 'bg-accent/10 text-accent' : 'text-white hover:bg-white/5')} onClick={() => { setProjectId(p.id); setShowProjects(false) }}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} /><span className="truncate">{p.name}</span>
               </button>
             ))}

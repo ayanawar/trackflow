@@ -51,7 +51,9 @@ export default function EntryRow({ entry, onEdit }: Props) {
       )}
 
       {entry.tag && (
-        <span className="max-w-[45%] truncate text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50 flex-shrink-0 sm:max-w-[120px]">{entry.tag.name}</span>
+        <span className="max-w-[45%] truncate text-[11px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50 flex-shrink-0 sm:max-w-[120px]">
+          {entry.tag.name}{entry.tag.status === 'INACTIVE' ? ' (inactive)' : ''}
+        </span>
       )}
 
       <span className="text-xs text-white/40 font-mono min-w-[130px] text-center hidden sm:block">

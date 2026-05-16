@@ -115,7 +115,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="relative animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>© 2025 TrackFlow. All rights reserved.</p>
+            <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>© 2026 TrackFlow. All rights reserved.</p>
           </div>
         </div>
 

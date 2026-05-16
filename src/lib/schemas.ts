@@ -22,6 +22,7 @@ export const timeEntrySchema = z.object({
   description: z.string().max(500).optional().default(''),
   projectId: z.string().nullable().optional(),
   taskId: z.string().max(200).nullable().optional(),
+  tagId: z.string().nullable().optional(),
   tag: z.string().max(50).nullable().optional(),
   billable: z.boolean().optional().default(false),
   startTime: z.string().datetime(),
@@ -32,6 +33,7 @@ export const timeEntryUpdateSchema = z.object({
   description: z.string().max(500).optional(),
   projectId: z.string().nullable().optional(),
   taskId: z.string().max(200).nullable().optional(),
+  tagId: z.string().nullable().optional(),
   tag: z.string().max(50).nullable().optional(),
   billable: z.boolean().optional(),
   startTime: z.string().datetime().optional(),
@@ -43,8 +45,25 @@ export const stopEntrySchema = z.object({
 })
 
 export const tagSchema = z.object({
-  name: z.string().min(1).max(50),
+  name: z.string().trim().min(1).max(50),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default('#888888'),
+})
+
+export const tagQuerySchema = z.object({
+  status: z.enum(['active', 'inactive', 'all']).optional().default('active'),
+  q: z.string().trim().max(50).optional(),
+  includeUsage: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform(value => value === 'true'),
+})
+
+export const tagUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(50).optional(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+}).refine(data => Object.keys(data).length > 0, {
+  message: 'Provide at least one field to update',
 })
 
 export const updateUserSchema = z.object({

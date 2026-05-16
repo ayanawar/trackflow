@@ -1,7 +1,8 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { Tag, X } from 'lucide-react'
-import { useTags } from '@/hooks/useTags'
+import { useCreateTag, useTags } from '@/hooks/useTags'
+import { cn } from '@/lib/utils'
 
 interface Props {
   value: string
@@ -14,6 +15,8 @@ export default function TagInput({ value, onSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const { data: tags = [] } = useTags()
+  const createTag = useCreateTag()
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -35,14 +38,31 @@ export default function TagInput({ value, onSelect }: Props) {
     onSelect(tag)
     setOpen(false)
     setInput('')
+    setError(null)
+  }
+
+  const handleCreate = async () => {
+    const name = input.trim()
+    if (!name) return
+    setError(null)
+    try {
+      const tag = await createTag.mutateAsync({ name })
+      handleSelect(tag.name)
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? 'Could not create tag')
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && input.trim()) {
-      handleSelect(input.trim())
+      e.preventDefault()
+      const existing = tags.find(t => t.name.toLowerCase() === input.trim().toLowerCase())
+      if (existing) handleSelect(existing.name)
+      else void handleCreate()
     } else if (e.key === 'Escape') {
       setOpen(false)
       setInput('')
+      setError(null)
     }
   }
 
@@ -85,17 +105,31 @@ export default function TagInput({ value, onSelect }: Props) {
                 <button
                   key={t.id}
                   type="button"
-                  className="w-full text-left text-xs px-2.5 py-1.5 rounded-lg text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+                  className={cn(
+                    'flex w-full items-center gap-2 text-left text-xs px-2.5 py-1.5 rounded-lg transition-colors',
+                    t.name === value
+                      ? 'bg-accent/10 text-accent'
+                      : 'text-white/70 hover:bg-white/5 hover:text-white'
+                  )}
                   onClick={() => handleSelect(t.name)}
                 >
+                  <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
                   {t.name}
                 </button>
               ))}
             </div>
           )}
           {filteredTags.length === 0 && input && (
-            <p className="text-[11px] text-white/30 px-2 pb-1">Press Enter to add &ldquo;{input}&rdquo;</p>
+            <button
+              type="button"
+              className="w-full text-left text-[11px] text-white/50 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5"
+              onClick={handleCreate}
+              disabled={createTag.isPending}
+            >
+              {createTag.isPending ? 'Adding...' : `Press Enter to add "${input}"`}
+            </button>
           )}
+          {error && <p className="px-2 pt-1 text-[11px] text-red-300">{error}</p>}
         </div>
       )}
     </div>

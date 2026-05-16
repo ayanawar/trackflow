@@ -91,8 +91,18 @@ export interface SecurityEvent {
 export interface Tag {
   id: string
   name: string
+  normalizedName?: string | null
   color: string
+  status?: 'ACTIVE' | 'INACTIVE'
+  workspaceId?: string
   userId: string
+  createdById?: string
+  updatedById?: string | null
+  usageCount?: number
+  canDelete?: boolean
+  createdAt?: string
+  updatedAt?: string
+  _count?: { timeEntries: number }
 }
 
 export interface TimeEntry {
