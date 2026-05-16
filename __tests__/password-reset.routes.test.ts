@@ -33,7 +33,7 @@ describe('password reset route handlers', () => {
     const body = await res.json()
     expect(res.status).toBe(200)
     expect(body.message).toBe('If that email exists, reset instructions have been sent.')
-    expect(authService.forgotPassword).toHaveBeenCalledWith('known@example.com')
+    expect(authService.forgotPassword).toHaveBeenCalledWith('known@example.com', 'http://localhost')
   })
 
   it('reset password returns generic invalid token error', async () => {

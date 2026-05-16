@@ -6,6 +6,7 @@ import { ok, badRequest, serverError } from '@/lib/response'
 import { forgotPassword } from '@/services/auth.service'
 import { checkRateLimit, rateLimitKey } from '@/lib/rateLimit'
 import { recordSecurityEvent, requestSecurityContext } from '@/services/securityEvent.service'
+import { getAppBaseUrl } from '@/lib/appUrl'
 
 export async function POST(req: NextRequest) {
   const securityContext = requestSecurityContext(req)
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     const result = forgotPasswordSchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
 
-    await forgotPassword(result.data.email)
+    await forgotPassword(result.data.email, getAppBaseUrl(req))
     await recordSecurityEvent({ type: 'PASSWORD_RESET_REQUESTED', email: result.data.email, ...securityContext })
     return ok({ message: "If that email exists, reset instructions have been sent." })
   } catch (err) {

@@ -7,6 +7,7 @@ import * as passwordResetTokenRepo from '@/repositories/passwordResetToken.repos
 import * as inviteTokenRepo from '@/repositories/inviteToken.repository'
 import { recordSecurityEvent } from '@/services/securityEvent.service'
 import { sendPasswordResetEmail, sendInviteEmail } from '@/lib/mailer'
+import { buildAppUrl } from '@/lib/appUrl'
 import type { Role } from '@/types'
 
 function hashToken(raw: string): string {
@@ -137,7 +138,7 @@ export async function googleAuth(idToken: string) {
   return { user, rawRefreshToken }
 }
 
-export async function forgotPassword(email: string) {
+export async function forgotPassword(email: string, appBaseUrl?: string) {
   const user = await userRepo.findByEmail(email)
   if (!user) return // prevent enumeration — return silently
 
@@ -145,7 +146,7 @@ export async function forgotPassword(email: string) {
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
   await passwordResetTokenRepo.create({ tokenHash: hashToken(raw), userId: user.id, expiresAt })
 
-  await sendPasswordResetEmail(email, raw)
+  await sendPasswordResetEmail(email, raw, appBaseUrl)
 }
 
 export async function resetPassword(rawToken: string, newPassword: string) {
@@ -171,7 +172,7 @@ export async function updateMe(userId: string, data: { name?: string; workspace?
   return userRepo.updateUser(userId, data)
 }
 
-export async function createInvite(invitedById: string, email: string, role: string) {
+export async function createInvite(invitedById: string, email: string, role: string, appBaseUrl?: string) {
   const existing = await userRepo.findByEmail(email)
   if (existing) throw new Error('A user with this email already exists')
 
@@ -182,12 +183,13 @@ export async function createInvite(invitedById: string, email: string, role: str
   await inviteTokenRepo.create({ tokenHash: hashToken(raw), email, role: role as Role, invitedById, expiresAt })
 
   const inviter = await userRepo.findById(invitedById)
-  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/auth/invite?token=${raw}`
+  const inviteUrl = buildAppUrl(`/auth/invite?token=${raw}`, appBaseUrl)
 
   await sendInviteEmail(email, raw, {
     inviterName: inviter?.name ?? 'Someone',
     workspace: inviter?.workspace ?? 'My Workspace',
     role,
+    appBaseUrl,
   })
 
   return { inviteUrl, email, role }

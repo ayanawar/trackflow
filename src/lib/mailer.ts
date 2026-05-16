@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { buildAppUrl } from '@/lib/appUrl'
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? 'mailpit.bugsbytes.com',
@@ -12,10 +13,9 @@ const transporter = nodemailer.createTransport({
 })
 
 const FROM = process.env.MAIL_FROM ?? 'TrackFlow <noreply@trackflow.dev>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-export async function sendPasswordResetEmail(email: string, rawToken: string) {
-  const resetUrl = `${APP_URL}/auth/reset-password?token=${rawToken}`
+export async function sendPasswordResetEmail(email: string, rawToken: string, appBaseUrl?: string) {
+  const resetUrl = buildAppUrl(`/auth/reset-password?token=${rawToken}`, appBaseUrl)
 
   await transporter.sendMail({
     from: FROM,
@@ -43,9 +43,9 @@ export async function sendPasswordResetEmail(email: string, rawToken: string) {
 export async function sendInviteEmail(
   email: string,
   rawToken: string,
-  options: { inviterName: string; workspace: string; role: string }
+  options: { inviterName: string; workspace: string; role: string; appBaseUrl?: string }
 ) {
-  const inviteUrl = `${APP_URL}/auth/invite?token=${rawToken}`
+  const inviteUrl = buildAppUrl(`/auth/invite?token=${rawToken}`, options.appBaseUrl)
 
   await transporter.sendMail({
     from: FROM,

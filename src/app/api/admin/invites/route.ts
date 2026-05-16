@@ -5,6 +5,7 @@ import { requireRole, getSessionFromRequest } from '@/lib/auth'
 import { ok, badRequest, serverError } from '@/lib/response'
 import { createInviteSchema } from '@/lib/schemas'
 import { createInvite } from '@/services/auth.service'
+import { getAppBaseUrl } from '@/lib/appUrl'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     let invite: Awaited<ReturnType<typeof createInvite>>
     try {
-      invite = await createInvite(session!.userId, result.data.email, result.data.role)
+      invite = await createInvite(session!.userId, result.data.email, result.data.role, getAppBaseUrl(req))
     } catch (err) {
       return badRequest(err instanceof Error ? err.message : 'Could not create invite')
     }

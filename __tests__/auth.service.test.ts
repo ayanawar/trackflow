@@ -26,6 +26,10 @@ vi.mock('@/repositories/inviteToken.repository', () => ({
   markUsed: vi.fn(),
   deleteByEmail: vi.fn(),
 }))
+vi.mock('@/lib/mailer', () => ({
+  sendPasswordResetEmail: vi.fn(),
+  sendInviteEmail: vi.fn(),
+}))
 vi.mock('google-auth-library')
 
 import * as userRepo from '@/repositories/user.repository'
