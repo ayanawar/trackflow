@@ -159,6 +159,7 @@ export interface TimeEntry {
   pausedDuration: number
   billable: boolean
   userId: string
+  user?: { id: string; name: string; avatarUrl?: string | null } | null
   createdAt: string
 }
 

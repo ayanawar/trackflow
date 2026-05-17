@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users, Tags, PanelsTopLeft } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users, Tags, PanelsTopLeft, CalendarDays } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
 import WorkspaceSwitcher from '@/components/workspace/WorkspaceSwitcher'
@@ -9,6 +9,7 @@ import WorkspaceSwitcher from '@/components/workspace/WorkspaceSwitcher'
 const navItems = [
   { href: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/tracker',       icon: Clock,           label: 'Tracker' },
+  { href: '/calendar',      icon: CalendarDays,    label: 'Calendar' },
   { href: '/reports',       icon: BarChart2,       label: 'Reports' },
   { href: '/projects',      icon: Folder,          label: 'Projects' },
   { href: '/workspaces',    icon: PanelsTopLeft,   label: 'Workspaces' },

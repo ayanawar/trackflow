@@ -121,6 +121,15 @@ export function getOpenAPISpec() {
             projectId:      { type: 'string', nullable: true },
             tagId:          { type: 'string', nullable: true },
             createdAt:      { type: 'string', format: 'date-time' },
+            user: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id:        { type: 'string' },
+                name:      { type: 'string' },
+                avatarUrl: { type: 'string', nullable: true },
+              },
+            },
           },
         },
         Organization: {
@@ -350,10 +359,14 @@ export function getOpenAPISpec() {
         get: {
           tags: ['Time Entries'], summary: 'List time entries for the current user', security: auth,
           parameters: [
-            { name: 'from',      in: 'query', schema: { type: 'string', format: 'date' }, description: 'Start date (ISO 8601)' },
-            { name: 'to',        in: 'query', schema: { type: 'string', format: 'date' }, description: 'End date (ISO 8601)' },
-            { name: 'projectId', in: 'query', schema: { type: 'string' } },
+            { name: 'from',      in: 'query', schema: { type: 'string', format: 'date' }, description: 'Start date (ISO 8601) — legacy param' },
+            { name: 'to',        in: 'query', schema: { type: 'string', format: 'date' }, description: 'End date (ISO 8601) — legacy param' },
+            { name: 'startDate', in: 'query', schema: { type: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$' }, description: 'Inclusive start date (YYYY-MM-DD, UTC). Must be paired with endDate.' },
+            { name: 'endDate',   in: 'query', schema: { type: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$' }, description: 'Inclusive end date (YYYY-MM-DD, UTC). Must be paired with startDate. Range ≤ 31 days.' },
+            { name: 'userId',    in: 'query', schema: { type: 'string' }, description: 'Filter by entry owner. MANAGER/ADMIN only.' },
+            { name: 'projectId', in: 'query', schema: { type: 'string' }, description: 'Filter by project ID.' },
             { name: 'tagId',     in: 'query', schema: { type: 'string' } },
+            { name: 'limit',     in: 'query', schema: { type: 'integer', minimum: 1, maximum: 1000, default: 500 }, description: 'Max entries to return when date range is present. Default 500, hard max 1000.' },
           ],
           responses: {
             200: { description: 'List of time entries', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/TimeEntry' } } } } },

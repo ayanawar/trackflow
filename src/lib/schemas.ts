@@ -210,3 +210,17 @@ export const inviteSchema = z.object({
 export const memberRoleSchema = z.object({
   role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']),
 })
+
+export const calendarQuerySchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'startDate must be YYYY-MM-DD'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'endDate must be YYYY-MM-DD'),
+  userId: z.string().optional(),
+  tagId: z.string().optional(),
+  projectId: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(1000).default(500),
+})
+
+export const calendarRescheduleSchema = z.object({
+  startTime: z.string().datetime(),
+  endTime: z.string().datetime(),
+})
