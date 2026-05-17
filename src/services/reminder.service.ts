@@ -60,7 +60,7 @@ export async function runNoLogReminders(appBaseUrl?: string): Promise<ReminderRe
     managerMap.get(mgr.id)!.missing.push({ name: user.name, email: user.email })
   }
 
-  for (const { manager, missing } of managerMap.values()) {
+  for (const { manager, missing } of Array.from(managerMap.values())) {
     try {
       await sendReminderManager(manager.email, manager.name, date, missing, undefined, appBaseUrl)
       managerEmailsSent++
