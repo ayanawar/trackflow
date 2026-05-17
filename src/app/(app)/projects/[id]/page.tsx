@@ -42,7 +42,8 @@ export default function ProjectBoardPage() {
   const [addingToCol, setAddingToCol] = useState<TaskStatus | null>(null)
   const [newTitle, setNewTitle] = useState('')
   const [newPriority, setNewPriority] = useState<TaskPriority>('MEDIUM')
-  const [newDueDate, setNewDueDate] = useState('')
+  const today = new Date().toISOString().split('T')[0]
+  const [newDueDate, setNewDueDate] = useState(today)
 
   // Edit task modal
   const [editTask, setEditTask] = useState<Task | null>(null)
@@ -346,7 +347,7 @@ export default function ProjectBoardPage() {
                   ) : (
                     canManage && (
                       <button
-                        onClick={() => { setAddingToCol(col.status); setNewTitle(''); setNewPriority('MEDIUM'); setNewDueDate('') }}
+                        onClick={() => { setAddingToCol(col.status); setNewTitle(''); setNewPriority('MEDIUM'); setNewDueDate(today) }}
                         className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] text-white/25 hover:text-white/60 hover:bg-white/5 transition-all"
                       >
                         <Plus size={12} />Add task
