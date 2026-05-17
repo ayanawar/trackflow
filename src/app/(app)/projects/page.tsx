@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Plus, X, Pencil } from 'lucide-react'
+import { Plus, X, Pencil, LayoutGrid } from 'lucide-react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 
 import { formatDuration } from '@/lib/utils'
@@ -68,16 +69,25 @@ export default function ProjectsPage() {
                       <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
                       <h3 className="text-sm font-semibold text-white truncate">{p.name}</h3>
                     </div>
-                    {canManageProjects && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
-                        <button className="text-white/30 hover:text-white transition-colors p-0.5" onClick={() => openEdit(p)}>
-                          <Pencil size={12} />
-                        </button>
-                        <button className="text-white/30 hover:text-accent-red transition-colors p-0.5" onClick={() => deleteProject.mutate(p.id)}>
-                          <X size={13} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
+                      <Link
+                        href={`/projects/${p.id}`}
+                        className="text-white/30 hover:text-accent transition-colors p-0.5"
+                        title="Open board"
+                      >
+                        <LayoutGrid size={12} />
+                      </Link>
+                      {canManageProjects && (
+                        <>
+                          <button className="text-white/30 hover:text-white transition-colors p-0.5" onClick={() => openEdit(p)}>
+                            <Pencil size={12} />
+                          </button>
+                          <button className="text-white/30 hover:text-accent-red transition-colors p-0.5" onClick={() => deleteProject.mutate(p.id)}>
+                            <X size={13} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                   {p.client && <p className="text-xs text-white/40 mb-3 ml-4 truncate">{p.client}</p>}
                   <div className="text-xl sm:text-2xl font-mono font-semibold text-white mt-3 break-words">{formatDuration(p.totalSeconds ?? 0)}</div>

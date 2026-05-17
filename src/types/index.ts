@@ -1,4 +1,23 @@
 export type Role = 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+
+export interface Task {
+  id: string
+  title: string
+  description?: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  dueDate?: string | null
+  order: number
+  projectId: string
+  assigneeId?: string | null
+  assignee?: { id: string; name: string; avatarUrl?: string | null } | null
+  createdById: string
+  createdBy?: { id: string; name: string } | null
+  createdAt: string
+  updatedAt: string
+}
 export type TeamMemberRole = 'MANAGER' | 'MEMBER'
 export type ProjectAccessLevel = 'VIEW' | 'TRACK' | 'MANAGE' | 'APPROVE'
 export type ClientAccessLevel = 'VIEW' | 'MANAGE' | 'REPORT'

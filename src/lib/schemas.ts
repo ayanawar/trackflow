@@ -102,6 +102,17 @@ export const acceptInviteSchema = z.object({
   workspace: z.string().min(1).max(100).optional(),
 })
 
+export const taskCreateSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']).default('TODO'),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  dueDate: z.string().datetime({ offset: true }).optional().nullable(),
+  assigneeId: z.string().optional().nullable(),
+})
+
+export const taskUpdateSchema = taskCreateSchema.partial()
+
 export const roleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE'])
 export const teamMemberRoleSchema = z.enum(['MANAGER', 'MEMBER'])
 export const projectAccessLevelSchema = z.enum(['VIEW', 'TRACK', 'MANAGE', 'APPROVE'])
