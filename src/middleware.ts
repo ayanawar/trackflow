@@ -18,6 +18,7 @@ const PUBLIC_API_PATHS  = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/auth/invite',
+  '/api/auth/extension-login',
   '/api/docs',
   '/api/openapi.json',
   '/api/invitations',
