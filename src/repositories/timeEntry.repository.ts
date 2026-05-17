@@ -6,6 +6,7 @@ const include = {
   project: true,
   tag: true,
   task: { select: { id: true, title: true } },
+  user: { select: { id: true, name: true, avatarUrl: true } },
 } as const
 
 export async function findAllByUser(userId: string, workspaceId: string, limit = 100, filters: { tagId?: string | null } = {}) {
@@ -151,4 +152,34 @@ export async function deleteEntry(id: string, userId: string, workspaceId: strin
 export async function deleteEntryById(id: string, workspaceId: string) {
   await prisma.timeEntry.findFirstOrThrow({ where: { id, workspaceId } })
   return prisma.timeEntry.delete({ where: { id } })
+}
+
+export async function findAllInDateRange(
+  user: { userId: string; role: Role },
+  workspaceId: string,
+  startDate: Date,
+  endDate: Date,
+  filters: { userId?: string | null; tagId?: string | null; projectId?: string | null } = {},
+) {
+  const ownerFilter =
+    user.role === 'EMPLOYEE'
+      ? { userId: user.userId }
+      : filters.userId
+        ? { userId: filters.userId }
+        : {}
+
+  const where = {
+    workspaceId,
+    ...ownerFilter,
+    startTime: { gte: startDate, lte: endDate },
+    ...(filters.tagId ? { tagId: filters.tagId } : {}),
+    ...(filters.projectId ? { projectId: filters.projectId } : {}),
+  }
+
+  return prisma.timeEntry.findMany({
+    where,
+    orderBy: { startTime: 'asc' },
+    take: 1000,
+    include,
+  })
 }
