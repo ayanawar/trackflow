@@ -21,6 +21,11 @@ enum TeamMemberRole {
   MEMBER
 }
 
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+}
+
 enum ProjectAccessLevel {
   VIEW
   TRACK
@@ -74,42 +79,46 @@ enum SecurityEventType {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  name             String
-  email            String   @unique
-  password         String?
-  googleId         String?  @unique
-  avatarUrl        String?
-  workspace        String   @default("My Workspace")
-  dailyHoursGoal   Int      @default(8)
-  role             Role     @default(EMPLOYEE)
-  activeOrgId      String?
-  managerId        String?
-  remindersEnabled Boolean  @default(true)
-  reminderTime     Int      @default(18)
-  notifyManager    Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  password          String?
+  googleId          String?  @unique
+  avatarUrl         String?
+  dailyHoursGoal    Int      @default(8)
+  role              Role     @default(EMPLOYEE)
+  activeOrgId       String?
+  activeWorkspaceId String?
+  managerId         String?
+  remindersEnabled  Boolean  @default(true)
+  reminderTime      Int      @default(18)
+  notifyManager     Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  projects            Project[]
-  timeEntries         TimeEntry[]
-  tags                Tag[]
-  refreshTokens       RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
-  memberships         Membership[]
-  teamMembers         TeamMember[]
-  projectAssignments  ProjectAssignment[]
-  clientAssignments   ClientAssignment[]
-  createdTeams        Team[]               @relation("TeamCreator")
-  createdClients      Client[]             @relation("ClientCreator")
-  securityEvents      SecurityEvent[]
-  approvedTimeEntries TimeEntry[]          @relation("TimeEntryApprover")
-  assignedTasks       Task[]               @relation("TaskAssignee")
-  createdTasks        Task[]               @relation("TaskCreator")
-  manager             User?                @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
-  managedUsers        User[]               @relation("UserManager")
+  projects             Project[]
+  timeEntries          TimeEntry[]
+  tags                 Tag[]
+  refreshTokens        RefreshToken[]
+  passwordResetTokens  PasswordResetToken[]
+  memberships          Membership[]
+  workspaceMemberships WorkspaceMembership[]
+  teamMembers          TeamMember[]
+  projectAssignments   ProjectAssignment[]
+  clientAssignments    ClientAssignment[]
+  createdTeams         Team[]                @relation("TeamCreator")
+  createdClients       Client[]              @relation("ClientCreator")
+  createdWorkspaces    Workspace[]           @relation("WorkspaceCreator")
+  activeWorkspace      Workspace?            @relation("ActiveWorkspace", fields: [activeWorkspaceId], references: [id], onDelete: SetNull)
+  securityEvents       SecurityEvent[]
+  approvedTimeEntries  TimeEntry[]           @relation("TimeEntryApprover")
+  assignedTasks        Task[]                @relation("TaskAssignee")
+  createdTasks         Task[]                @relation("TaskCreator")
+  manager              User?                 @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
+  managedUsers         User[]                @relation("UserManager")
 
   @@index([managerId])
+  @@index([activeWorkspaceId])
   @@map("users")
 }
 
@@ -149,11 +158,13 @@ model InviteToken {
   email       String
   role        Role      @default(EMPLOYEE)
   invitedById String
+  workspaceId String?
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime  @default(now())
 
   @@index([email])
+  @@index([workspaceId])
   @@map("invite_tokens")
 }
 
@@ -166,6 +177,7 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   memberships Membership[]
+  workspaces  Workspace[]
   teams       Team[]
   invitations Invitation[]
 
@@ -186,19 +198,63 @@ model Membership {
   @@map("memberships")
 }
 
+model Workspace {
+  id             String   @id @default(cuid())
+  orgId          String
+  name           String
+  normalizedName String
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy    User?                 @relation("WorkspaceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  memberships  WorkspaceMembership[]
+  projects     Project[]
+  clients      Client[]
+  tags         Tag[]
+  timeEntries  TimeEntry[]
+  tasks        Task[]
+  invitations  Invitation[]
+  activeFor    User[]                @relation("ActiveWorkspace")
+
+  @@unique([orgId, normalizedName])
+  @@index([orgId])
+  @@map("workspaces")
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId, role])
+  @@map("workspace_memberships")
+}
+
 model Invitation {
-  id         String    @id @default(cuid())
-  email      String
-  orgId      String
-  role       String    @default("MEMBER")
-  token      String    @unique @default(cuid())
-  expiresAt  DateTime
+  id          String    @id @default(cuid())
+  email       String
+  orgId       String
+  workspaceId String
+  role        String    @default("MEMBER")
+  token       String    @unique @default(cuid())
+  expiresAt   DateTime
   acceptedAt DateTime?
-  createdAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
 
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([email, orgId])
+  @@index([workspaceId])
   @@map("invitations")
 }
 
@@ -240,35 +296,41 @@ model Client {
   id          String   @id @default(cuid())
   name        String
   description String?
+  workspaceId String
   createdById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  workspace         Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy         User?              @relation("ClientCreator", fields: [createdById], references: [id], onDelete: Cascade)
   projects          Project[]
   clientAssignments ClientAssignment[]
 
+  @@index([workspaceId])
   @@map("clients")
 }
 
 model Project {
-  id             String   @id @default(cuid())
+  id             String        @id @default(cuid())
   name           String
   client         String?
   clientId       String?
   color          String        @default("#4f8ef7")
   status         ProjectStatus @default(ACTIVE)
   estimatedHours Int?
+  workspaceId    String
   userId         String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
+  workspace          Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   clientRef          Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
   timeEntries        TimeEntry[]
   projectAssignments ProjectAssignment[]
   tasks              Task[]
 
+  @@index([workspaceId])
   @@index([clientId])
   @@map("projects")
 }
@@ -281,17 +343,20 @@ model Task {
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
   order       Int          @default(0)
+  workspaceId String
   projectId   String
   assigneeId  String?
   createdById String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignee    User?       @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   createdBy   User        @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
   timeEntries TimeEntry[]
 
+  @@index([workspaceId, status])
   @@index([projectId, status])
   @@index([assigneeId])
   @@map("tasks")
@@ -341,12 +406,13 @@ model Tag {
   normalizedName String?
   color          String    @default("#888888")
   status         TagStatus @default(ACTIVE)
-  workspaceId    String    @default("workspace:My Workspace")
+  workspaceId    String
   userId         String
   updatedById    String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @default(now()) @updatedAt
 
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   timeEntries TimeEntry[]
 
@@ -371,18 +437,21 @@ model TimeEntry {
   approvedById   String?
   approvedAt     DateTime?
   rejectedReason String?
+  workspaceId    String
   userId         String
   projectId      String?
   tagId          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  tag        Tag?     @relation(fields: [tagId], references: [id], onDelete: SetNull)
-  task       Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  approvedBy User?    @relation("TimeEntryApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  tag        Tag?      @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  task       Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  approvedBy User?     @relation("TimeEntryApprover", fields: [approvedById], references: [id], onDelete: SetNull)
 
+  @@index([workspaceId, startTime])
   @@index([userId, startTime])
   @@index([userId, isRunning])
   @@index([projectId])

@@ -28,18 +28,19 @@ describe('registerSchema', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
+      organizationName: 'Acme Inc.',
+      workspaceName: 'Engineering',
     })
     expect(result.success).toBe(true)
   })
   it('rejects password shorter than 8 chars', () => {
-    expect(registerSchema.safeParse({ name: 'John', email: 'john@example.com', password: 'short' }).success).toBe(false)
+    expect(registerSchema.safeParse({ name: 'John', email: 'john@example.com', password: 'short', organizationName: 'Org', workspaceName: 'WS' }).success).toBe(false)
   })
   it('rejects missing name', () => {
-    expect(registerSchema.safeParse({ email: 'john@example.com', password: 'password123' }).success).toBe(false)
+    expect(registerSchema.safeParse({ email: 'john@example.com', password: 'password123', organizationName: 'Org', workspaceName: 'WS' }).success).toBe(false)
   })
-  it('defaults workspace to My Workspace', () => {
-    const result = registerSchema.safeParse({ name: 'John', email: 'john@example.com', password: 'password123' })
-    expect(result.success && result.data.workspace).toBe('My Workspace')
+  it('requires organization and workspace names', () => {
+    expect(registerSchema.safeParse({ name: 'John', email: 'john@example.com', password: 'password123' }).success).toBe(false)
   })
 })
 
@@ -66,11 +67,11 @@ describe('resetPasswordSchema', () => {
 
 describe('createInviteSchema', () => {
   it('accepts valid invite', () => {
-    expect(createInviteSchema.safeParse({ email: 'user@example.com', role: 'EMPLOYEE' }).success).toBe(true)
+    expect(createInviteSchema.safeParse({ email: 'user@example.com', role: 'EMPLOYEE', workspaceId: 'ws_1' }).success).toBe(true)
   })
   it('accepts all roles', () => {
     for (const role of ['ADMIN', 'MANAGER', 'EMPLOYEE']) {
-      expect(createInviteSchema.safeParse({ email: 'u@e.com', role }).success).toBe(true)
+      expect(createInviteSchema.safeParse({ email: 'u@e.com', role, workspaceId: 'ws_1' }).success).toBe(true)
     }
   })
   it('rejects invalid role', () => {

@@ -16,9 +16,9 @@ const includeWithAssignments = {
 
 export type ProjectRow = Awaited<ReturnType<typeof findAllByUser>>[number]
 
-export async function findAllByUser(userId: string) {
+export async function findAllByUser(userId: string, workspaceId: string) {
   const projects = await prisma.project.findMany({
-    where: { userId },
+    where: { userId, workspaceId },
     orderBy: { createdAt: 'desc' },
     include,
   })
@@ -34,10 +34,10 @@ export async function findAllByUser(userId: string) {
   }))
 }
 
-export async function findAllAccessible(user: { userId: string; role: Role }) {
-  const where = await projectAccessWhere(user)
+export async function findAllAccessible(user: { userId: string; role: Role }, workspaceId: string) {
+  const where = await projectAccessWhere(user, workspaceId)
   const projects = await prisma.project.findMany({
-    where,
+    where: { AND: [where, { workspaceId }] },
     orderBy: { createdAt: 'desc' },
     include: { ...includeWithAssignments, clientRef: true },
   })
@@ -61,14 +61,14 @@ export async function findAllAccessible(user: { userId: string; role: Role }) {
   }))
 }
 
-export async function findProjectById(id: string, userId: string) {
-  const p = await prisma.project.findUnique({ where: { id } })
+export async function findProjectById(id: string, userId: string, workspaceId: string) {
+  const p = await prisma.project.findFirst({ where: { id, workspaceId } })
   if (!p || p.userId !== userId) return null
   return p
 }
 
-export async function findById(id: string) {
-  return prisma.project.findUnique({ where: { id }, include: { clientRef: true } })
+export async function findById(id: string, workspaceId: string) {
+  return prisma.project.findFirst({ where: { id, workspaceId }, include: { clientRef: true } })
 }
 
 export async function createProject(data: {
@@ -77,6 +77,7 @@ export async function createProject(data: {
   clientId?: string | null
   color: string
   userId: string
+  workspaceId: string
 }) {
   return prisma.project.create({ data })
 }
@@ -84,11 +85,14 @@ export async function createProject(data: {
 export async function updateProject(
   id: string,
   userId: string,
+  workspaceId: string,
   data: { name?: string; client?: string | null; clientId?: string | null; color?: string; status?: string }
 ) {
+  await prisma.project.findFirstOrThrow({ where: { id, workspaceId } })
   return prisma.project.update({ where: { id }, data: data as Parameters<typeof prisma.project.update>[0]['data'] })
 }
 
-export async function deleteProject(id: string, userId: string) {
+export async function deleteProject(id: string, userId: string, workspaceId: string) {
+  await prisma.project.findFirstOrThrow({ where: { id, workspaceId } })
   return prisma.project.delete({ where: { id } })
 }

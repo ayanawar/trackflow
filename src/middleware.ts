@@ -8,12 +8,14 @@ const PUBLIC_PAGE_PATHS = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/invite',
+  '/auth/google/complete',
 ]
 const PUBLIC_API_PATHS  = [
   '/api/auth/login',
   '/api/auth/register',
   '/api/auth/me',
   '/api/auth/google',
+  '/api/auth/google/complete',
   '/api/auth/refresh',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
@@ -49,7 +51,9 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.redirect(new URL('/auth/login', req.url))
+    const loginUrl = new URL('/auth/login', req.url)
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   const payload = await verifyToken(token)
@@ -57,7 +61,9 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.redirect(new URL('/auth/login', req.url))
+    const loginUrl = new URL('/auth/login', req.url)
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   return NextResponse.next()

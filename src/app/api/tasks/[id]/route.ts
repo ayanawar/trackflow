@@ -4,14 +4,17 @@ import { NextRequest } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
 import { taskUpdateSchema } from '@/lib/schemas'
 import { ok, noContent, badRequest, unauthorized, forbidden, notFound, serverError } from '@/lib/response'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import { prisma } from '@/lib/prisma'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
 
-    const task = await prisma.task.findUnique({ where: { id: params.id } })
+    const task = await prisma.task.findFirst({ where: { id: params.id, workspaceId: ctx.workspaceId } })
     if (!task) return notFound()
 
     let body: unknown
@@ -48,8 +51,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
     if (session.role === 'EMPLOYEE') return forbidden('Only Managers and Admins can delete tasks')
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
 
-    const task = await prisma.task.findUnique({ where: { id: params.id } })
+    const task = await prisma.task.findFirst({ where: { id: params.id, workspaceId: ctx.workspaceId } })
     if (!task) return notFound()
 
     await prisma.task.delete({ where: { id: params.id } })

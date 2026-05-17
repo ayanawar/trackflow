@@ -1,16 +1,19 @@
 'use client'
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Sidebar from './Sidebar'
 import { useAuthStore } from '@/lib/authStore'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, isLoading } = useAuthStore()
 
   useEffect(() => {
-    if (!isLoading && !user) router.replace('/auth/login')
-  }, [isLoading, router, user])
+    if (!isLoading && !user) {
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`)
+    }
+  }, [isLoading, pathname, router, user])
 
   return (
     <div className="flex h-screen overflow-hidden">

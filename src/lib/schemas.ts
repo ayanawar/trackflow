@@ -1,10 +1,34 @@
 import { z } from 'zod'
 
+// Display-name field reused for Organization Name and Workspace Name.
+// Trimmed, 1..60 chars (FR-017).
+export const orgOrWorkspaceName = z
+  .string()
+  .trim()
+  .min(1, 'required')
+  .max(60, 'must be 1-60 characters')
+
 export const registerSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(8),
-  workspace: z.string().min(1).max(100).optional().default('My Workspace'),
+  organizationName: orgOrWorkspaceName,
+  workspaceName: orgOrWorkspaceName,
+})
+
+export const googleCompleteSchema = z.object({
+  setupToken: z.string().min(1),
+  organizationName: orgOrWorkspaceName,
+  workspaceName: orgOrWorkspaceName,
+})
+
+export const workspaceCreateSchema = z.object({
+  orgId: z.string().min(1),
+  name: orgOrWorkspaceName,
+})
+
+export const workspaceDeleteSchema = z.object({
+  confirmName: z.string().min(1),
 })
 
 export const loginSchema = z.object({
@@ -69,7 +93,6 @@ export const tagUpdateSchema = z.object({
 
 export const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  workspace: z.string().min(1).max(100).optional(),
   dailyHoursGoal: z.number().int().min(1).max(24).optional(),
 })
 
@@ -94,13 +117,13 @@ export const resetPasswordSchema = z.object({
 export const createInviteSchema = z.object({
   email: z.string().email(),
   role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']),
+  workspaceId: z.string().min(1, 'required'),
 })
 
 export const acceptInviteSchema = z.object({
   token: z.string().min(1),
   name: z.string().min(1).max(100),
   password: z.string().min(8),
-  workspace: z.string().min(1).max(100).optional(),
 })
 
 export const taskCreateSchema = z.object({
@@ -123,16 +146,13 @@ export const adminCreateUserSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(8).optional(),
-  workspace: z.string().min(1).max(100).optional().default('My Workspace'),
   role: roleSchema.default('EMPLOYEE'),
 })
 
 export const adminUpdateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  workspace: z.string().min(1).max(100).optional(),
   dailyHoursGoal: z.number().int().min(1).max(24).optional(),
   role: roleSchema.optional(),
-
 })
 
 export const orgSchema = z.object({
@@ -184,6 +204,7 @@ export const clientAssignmentSchema = exactlyOneAssignee(z.object({
 export const inviteSchema = z.object({
   email: z.string().email(),
   role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).default('EMPLOYEE'),
+  workspaceId: z.string().min(1, 'required'),
 })
 
 export const memberRoleSchema = z.object({

@@ -7,13 +7,17 @@ const tagInclude = {
 
 export type TagWithUsage = Prisma.TagGetPayload<{ include: typeof tagInclude }>
 
+/**
+ * @deprecated Workspace identifiers are now real FKs to the Workspace table.
+ * Callers should pass an explicit workspaceId. Retained as a no-op shim for
+ * any straggling import; returns the user's activeWorkspaceId if available.
+ */
 export async function getWorkspaceKeyForUser(userId: string): Promise<string | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { activeOrgId: true, workspace: true },
+    select: { activeWorkspaceId: true },
   })
-  if (!user) return null
-  return user.activeOrgId ? `org:${user.activeOrgId}` : `workspace:${user.workspace || 'My Workspace'}`
+  return user?.activeWorkspaceId ?? null
 }
 
 export async function findAllByWorkspace(

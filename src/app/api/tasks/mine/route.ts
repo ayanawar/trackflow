@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
 import { ok, unauthorized, serverError } from '@/lib/response'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import prisma from '@/lib/prisma'
 
 /**
@@ -13,11 +14,14 @@ import prisma from '@/lib/prisma'
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
   if (!session) return unauthorized()
+  const ctx = await resolveWorkspaceContext(req, session)
+  if (!isWorkspaceContext(ctx)) return ctx
 
   try {
     const tasks = await prisma.task.findMany({
       where: {
         assigneeId: session.userId,
+        workspaceId: ctx.workspaceId,
         status: { not: 'DONE' },
       },
       select: {

@@ -10,7 +10,13 @@ import { useAuthStore } from '@/lib/authStore'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 import AuthPageGuard from '@/components/auth/AuthPageGuard'
 
-interface FormData { name: string; email: string; password: string; workspace: string }
+interface FormData {
+  organizationName: string
+  workspaceName: string
+  name: string
+  email: string
+  password: string
+}
 
 const PERKS = [
   'No credit card required',
@@ -41,6 +47,11 @@ export default function RegisterPage() {
   const googleMutation = useMutation({
     mutationFn: (idToken: string) => api.post('/auth/google', { idToken }),
     onSuccess: ({ data }) => {
+      if (data?.status === 'NEEDS_SETUP') {
+        sessionStorage.setItem('tf_google_setup', JSON.stringify(data))
+        router.push('/auth/google/complete')
+        return
+      }
       setUser(data.user)
       router.push('/dashboard')
     },
@@ -158,21 +169,40 @@ export default function RegisterPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit(d => mutation.mutate(d))} className="space-y-4">
+              {/* Organization (BEFORE Workspace per FR-001) */}
+              <div className="space-y-1.5">
+                <label className="label">Organization name</label>
+                <div className="relative">
+                  <Building2 size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'rgb(var(--text-faint))' }} />
+                  <input
+                    className="input pl-9"
+                    placeholder="Acme Inc."
+                    maxLength={60}
+                    {...register('organizationName', { required: true, maxLength: 60 })}
+                  />
+                </div>
+              </div>
+
+              {/* Workspace (AFTER Organization) */}
+              <div className="space-y-1.5">
+                <label className="label">Workspace name</label>
+                <div className="relative">
+                  <Building2 size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'rgb(var(--text-faint))' }} />
+                  <input
+                    className="input pl-9"
+                    placeholder="Engineering"
+                    maxLength={60}
+                    {...register('workspaceName', { required: true, maxLength: 60 })}
+                  />
+                </div>
+              </div>
+
               {/* Name */}
               <div className="space-y-1.5">
                 <label className="label">Full name</label>
                 <div className="relative">
                   <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'rgb(var(--text-faint))' }} />
                   <input className="input pl-9" placeholder="John Doe" {...register('name', { required: true })} />
-                </div>
-              </div>
-
-              {/* Workspace */}
-              <div className="space-y-1.5">
-                <label className="label">Workspace name</label>
-                <div className="relative">
-                  <Building2 size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'rgb(var(--text-faint))' }} />
-                  <input className="input pl-9" placeholder="My Company" {...register('workspace', { required: true })} />
                 </div>
               </div>
 

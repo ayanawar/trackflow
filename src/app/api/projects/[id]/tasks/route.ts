@@ -6,18 +6,21 @@ import { taskCreateSchema } from '@/lib/schemas'
 import { ok, created, badRequest, unauthorized, forbidden, notFound, serverError } from '@/lib/response'
 import { prisma } from '@/lib/prisma'
 import { getAccessibleProject } from '@/services/project.service'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import type { Role } from '@/types'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
 
-    const project = await getAccessibleProject(params.id, { userId: session.userId, role: session.role as Role })
+    const project = await getAccessibleProject(params.id, { userId: session.userId, role: session.role as Role }, ctx.workspaceId)
     if (!project) return notFound('Project not found or access denied')
 
     const tasks = await prisma.task.findMany({
-      where: { projectId: params.id },
+      where: { projectId: params.id, workspaceId: ctx.workspaceId },
       include: {
         assignee: { select: { id: true, name: true, avatarUrl: true } },
         createdBy: { select: { id: true, name: true } },
@@ -37,8 +40,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
     if (session.role === 'EMPLOYEE') return forbidden('Only Managers and Admins can create tasks')
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
 
-    const project = await getAccessibleProject(params.id, { userId: session.userId, role: session.role as Role })
+    const project = await getAccessibleProject(params.id, { userId: session.userId, role: session.role as Role }, ctx.workspaceId)
     if (!project) return notFound('Project not found or access denied')
 
     let body: unknown
@@ -55,6 +60,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         priority: result.data.priority,
         dueDate: result.data.dueDate ? new Date(result.data.dueDate) : null,
         assigneeId: result.data.assigneeId ?? null,
+        workspaceId: ctx.workspaceId,
         projectId: params.id,
         createdById: session.userId,
       },

@@ -37,7 +37,8 @@ export interface User {
   id: string
   name: string
   email: string
-  workspace: string
+  activeOrgId?: string | null
+  activeWorkspaceId?: string | null
   role: Role
   dailyHoursGoal?: number
   managerId?: string | null
