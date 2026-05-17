@@ -41,7 +41,14 @@ export default function EntryRow({ entry, onEdit }: Props) {
 
       <div className="min-w-0 flex-[1_1_calc(100%-2rem)] sm:flex-1">
         <p className="text-sm text-white truncate">{entry.description || <span className="text-white/30 italic">No description</span>}</p>
-        {entry.project && <p className="text-xs text-white/40 mt-0.5 truncate">{entry.project.name}{entry.project.client ? ` · ${entry.project.client}` : ''}</p>}
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {entry.project && <p className="text-xs text-white/40 truncate">{entry.project.name}{entry.project.client ? ` · ${entry.project.client}` : ''}</p>}
+          {entry.task && (
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md text-white/30 bg-white/[0.04] border border-white/[0.07] truncate max-w-[160px]" title={entry.task.title}>
+              #{entry.task.id.slice(0, 7)} · {entry.task.title}
+            </span>
+          )}
+        </div>
       </div>
 
       {entry.billable && (

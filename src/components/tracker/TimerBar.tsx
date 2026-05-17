@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Play, Square, Pause, Folder, DollarSign, Mic, MicOff, Check } from 'lucide-react'
+import { Play, Square, Pause, Folder, DollarSign, Mic, MicOff, Check, Loader2 } from 'lucide-react'
 import TagInput from '@/components/tracker/TagInput'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/apiClient'
 import { formatSeconds, cn } from '@/lib/utils'
-import type { Project, TimeEntry } from '@/types'
+import type { Project, TimeEntry, Task } from '@/types'
 
 interface Props {
   projects: Project[]
@@ -16,10 +16,13 @@ export default function TimerBar({ projects, runningEntry }: Props) {
   const qc = useQueryClient()
   const [description, setDescription] = useState('')
   const [projectId, setProjectId] = useState<string | null>(null)
+  const [taskId, setTaskId] = useState<string | null>(null)
   const [tag, setTag] = useState('')
   const [billable, setBillable] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [showProjects, setShowProjects] = useState(false)
+  // Optimistic local state so buttons respond instantly before server round-trip
+  const [optimisticState, setOptimisticState] = useState<'running' | 'paused' | 'stopped' | null>(null)
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -71,14 +74,28 @@ export default function TimerBar({ projects, runningEntry }: Props) {
     recognition.start()
   }, [isListening])
 
-  const isRunning = !!runningEntry && runningEntry.isRunning
-  const isPaused = !!runningEntry && runningEntry.isPaused
-  const isActive = isRunning || isPaused
+  const _isRunning = !!runningEntry && runningEntry.isRunning
+  const _isPaused  = !!runningEntry && runningEntry.isPaused
+
+  // Clear optimistic state once the server state has caught up (avoids flicker)
+  useEffect(() => {
+    if (optimisticState === null) return
+    if (optimisticState === 'running' && _isRunning)              setOptimisticState(null)
+    if (optimisticState === 'paused'  && _isPaused)               setOptimisticState(null)
+    if (optimisticState === 'stopped' && !_isRunning && !_isPaused) setOptimisticState(null)
+  }, [_isRunning, _isPaused, optimisticState])
+
+  const isRunning  = optimisticState === 'running'  || (optimisticState === null && _isRunning)
+  const isPaused   = optimisticState === 'paused'   || (optimisticState === null && _isPaused)
+  const isActive   = optimisticState === 'stopped'  ? false
+                   : optimisticState !== null        ? true
+                   : _isRunning || _isPaused
 
   useEffect(() => {
     if (runningEntry) {
       setDescription(runningEntry.description ?? '')
       setProjectId(runningEntry.projectId)
+      setTaskId(runningEntry.taskId ?? null)
       setTag(runningEntry.tag?.name ?? '')
       setBillable(runningEntry.billable)
     }
@@ -107,32 +124,47 @@ export default function TimerBar({ projects, runningEntry }: Props) {
 
   const startMutation = useMutation({
     mutationFn: () => api.post('/time-entries', {
-      description, projectId, tag: tag || null, billable,
+      description, projectId, taskId: taskId || null, tag: tag || null, billable,
       startTime: new Date().toISOString(),
     }),
+    onMutate: () => setOptimisticState('running'),
     onSuccess: invalidate,
+    onError: () => setOptimisticState(null),
   })
 
   const stopMutation = useMutation({
     mutationFn: () => api.patch(`/time-entries/${runningEntry?.id}/stop`, { endTime: new Date().toISOString() }),
+    onMutate: () => setOptimisticState('stopped'),
     onSuccess: () => {
       invalidate()
-      setDescription(''); setProjectId(null); setTag(''); setBillable(false)
+      setDescription(''); setProjectId(null); setTaskId(null); setTag(''); setBillable(false)
     },
+    onError: () => setOptimisticState(null),
   })
 
   const pauseMutation = useMutation({
     mutationFn: () => api.patch(`/time-entries/${runningEntry?.id}/pause`),
+    onMutate: () => setOptimisticState('paused'),
     onSuccess: invalidate,
+    onError: () => setOptimisticState(null),
   })
 
   const resumeMutation = useMutation({
     mutationFn: () => api.patch(`/time-entries/${runningEntry?.id}/resume`),
+    onMutate: () => setOptimisticState('running'),
     onSuccess: invalidate,
+    onError: () => setOptimisticState(null),
+  })
+
+  const { data: projectTasks = [] } = useQuery<Task[]>({
+    queryKey: ['tasks', projectId],
+    queryFn: () => api.get(`/projects/${projectId}/tasks`).then(r => r.data),
+    enabled: !!projectId,
   })
 
   const isBusy = startMutation.isPending || stopMutation.isPending || pauseMutation.isPending || resumeMutation.isPending
   const activeProject = projects.find(p => p.id === projectId)
+  const activeTask = projectTasks.find(t => t.id === taskId)
   const canStart = !!projectId
 
   return (
@@ -225,6 +257,31 @@ export default function TimerBar({ projects, runningEntry }: Props) {
         )}
       </div>
 
+      {/* Task picker — only visible when a project is selected */}
+      {projectId && projectTasks.length > 0 && (
+        <div className="relative w-full md:w-auto">
+          <select
+            className={cn(
+              'flex min-h-9 w-full items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-all md:w-auto md:max-w-[200px]',
+              'appearance-none -webkit-appearance-none cursor-pointer outline-none',
+              taskId
+                ? 'border-[color:var(--border)] bg-[rgb(var(--accent)_/_0.04)] text-[rgb(var(--text-muted))]'
+                : 'border-[color:var(--border)] bg-white/[0.03] text-[rgb(var(--text-faint))]'
+            )}
+            value={taskId ?? ''}
+            disabled={isActive}
+            onChange={e => setTaskId(e.target.value || null)}
+          >
+            <option value="">No task</option>
+            {projectTasks.map(t => (
+              <option key={t.id} value={t.id}>
+                #{t.id.slice(0, 7)} · {t.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Tag */}
       <TagInput value={tag} onSelect={setTag} />
 
@@ -263,9 +320,11 @@ export default function TimerBar({ projects, runningEntry }: Props) {
             title={isPaused ? 'Resume' : 'Pause'}
             className="flex-1 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all hover:brightness-110 active:scale-95 bg-yellow-500/20 border border-yellow-500/30 md:flex-none md:w-10"
           >
-            {isPaused
-              ? <Play size={13} fill="currentColor" className="text-yellow-400 ml-0.5" />
-              : <Pause size={13} fill="currentColor" className="text-yellow-400" />}
+            {pauseMutation.isPending || resumeMutation.isPending
+              ? <Loader2 size={13} className="text-yellow-400 animate-spin" />
+              : isPaused
+                ? <Play size={13} fill="currentColor" className="text-yellow-400 ml-0.5" />
+                : <Pause size={13} fill="currentColor" className="text-yellow-400" />}
           </button>
         )}
 
@@ -283,9 +342,11 @@ export default function TimerBar({ projects, runningEntry }: Props) {
                 : 'bg-white/10 cursor-not-allowed opacity-50'
           )}
         >
-          {isActive
-            ? <Square size={14} fill="white" className="text-white" />
-            : <Play size={14} fill="white" className="text-white ml-0.5" />}
+          {startMutation.isPending || stopMutation.isPending
+            ? <Loader2 size={14} className="text-white animate-spin" />
+            : isActive
+              ? <Square size={14} fill="white" className="text-white" />
+              : <Play size={14} fill="white" className="text-white ml-0.5" />}
         </button>
       </div>
     </div>

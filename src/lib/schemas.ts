@@ -16,6 +16,7 @@ export const projectSchema = z.object({
   name: z.string().min(1).max(100),
   client: z.string().max(100).optional().nullable(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#4f8ef7'),
+  status: z.enum(['ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']).default('ACTIVE'),
 })
 
 export const timeEntrySchema = z.object({

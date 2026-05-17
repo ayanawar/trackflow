@@ -1,12 +1,12 @@
 'use client'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { X, DollarSign } from 'lucide-react'
 import api from '@/lib/apiClient'
 import { toLocalTime, cn } from '@/lib/utils'
 import TagInput from '@/components/tracker/TagInput'
-import type { TimeEntry, Project } from '@/types'
+import type { TimeEntry, Project, Task } from '@/types'
 
 interface FormData {
   description: string
@@ -29,6 +29,13 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
   const qc = useQueryClient()
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormData>()
   const billable = watch('billable')
+  const selectedProjectId = watch('projectId')
+
+  const { data: projectTasks = [] } = useQuery<Task[]>({
+    queryKey: ['tasks', selectedProjectId],
+    queryFn: () => api.get(`/projects/${selectedProjectId}/tasks`).then(r => r.data),
+    enabled: !!selectedProjectId,
+  })
 
   useEffect(() => {
     const now = new Date()
@@ -131,7 +138,23 @@ export default function EntryModal({ entry, projects, onClose }: Props) {
 
           <div>
             <label className="label">Task (optional)</label>
-            <input className="input" placeholder="Task name or ID" {...register('taskId')} />
+            {selectedProjectId && projectTasks.length > 0 ? (
+              <select className="input" {...register('taskId')} onChange={e => { setValue('taskId', e.target.value) }}>
+                <option value="">— No task —</option>
+                {projectTasks.map(t => (
+                  <option key={t.id} value={t.id}>
+                    #{t.id.slice(0, 7)} · {t.title}{t.description ? ` — ${t.description.slice(0, 50)}` : ''}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className="input opacity-50 cursor-not-allowed"
+                placeholder={selectedProjectId ? 'No tasks in this project' : 'Select a project first'}
+                disabled
+                readOnly
+              />
+            )}
           </div>
 
           <div>

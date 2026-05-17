@@ -169,7 +169,33 @@ export default function ProjectBoardPage() {
       {/* Board */}
       <div className="flex-1 overflow-hidden">
         <div className="flex gap-4 h-full overflow-x-auto p-4 pb-6">
-          {COLUMNS.map(col => {
+          {isLoading ? (
+            COLUMNS.map(col => (
+              <div
+                key={col.status}
+                className="flex flex-col flex-shrink-0 w-[272px] rounded-2xl animate-pulse"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center gap-2 px-3 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: col.color }} />
+                  <div className="h-3 w-16 rounded-md bg-white/10" />
+                  <div className="ml-auto h-5 w-5 rounded-full bg-white/10" />
+                </div>
+                <div className="flex-1 p-2 space-y-2">
+                  {Array.from({ length: col.status === 'TODO' ? 3 : col.status === 'IN_PROGRESS' ? 2 : 1 }).map((_, i) => (
+                    <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: 'rgb(var(--bg-card))', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="h-3 bg-white/10 rounded-md w-full" />
+                      <div className="h-3 bg-white/[0.06] rounded-md w-2/3" />
+                      <div className="flex gap-1.5 mt-1">
+                        <div className="h-4 w-12 bg-white/[0.06] rounded-full" />
+                        <div className="h-4 w-16 bg-white/[0.06] rounded-full" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : COLUMNS.map(col => {
             const colTasks = tasksByStatus(col.status)
             const isOver = dragOverCol === col.status
 
@@ -201,14 +227,6 @@ export default function ProjectBoardPage() {
 
                 {/* Task list */}
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                  {isLoading && colTasks.length === 0 && (
-                    <div className="space-y-2">
-                      {[1, 2].map(i => (
-                        <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
-                      ))}
-                    </div>
-                  )}
-
                   {colTasks.map(task => {
                     const pm = PRIORITY_META[task.priority]
                     const overdue = isOverdue(task.dueDate)
@@ -226,7 +244,10 @@ export default function ProjectBoardPage() {
                       >
                         {/* Top row: title + actions */}
                         <div className="flex items-start gap-2 mb-2.5">
-                          <p className="text-[13px] font-medium text-white leading-snug flex-1 min-w-0 break-words">{task.title}</p>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[9px] font-mono text-white/20 select-all">#{task.id.slice(0, 8)}</span>
+                            <p className="text-[13px] font-medium text-white leading-snug break-words">{task.title}</p>
+                          </div>
                           <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => openEdit(task)}

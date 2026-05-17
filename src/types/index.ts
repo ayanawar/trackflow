@@ -42,6 +42,15 @@ export interface User {
   createdAt: string
 }
 
+export type ProjectStatus = 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED'
+
+export interface ProjectAssignmentUser {
+  id: string
+  userId?: string | null
+  user?: { id: string; name: string } | null
+  accessLevel: string
+}
+
 export interface Project {
   id: string
   name: string
@@ -49,10 +58,12 @@ export interface Project {
   clientId?: string | null
   clientRef?: Client | null
   color: string
+  status?: ProjectStatus
   userId: string
   totalSeconds?: number
   entryCount?: number
   createdAt: string
+  assignments?: ProjectAssignmentUser[]
 }
 
 export interface Team {
@@ -132,6 +143,7 @@ export interface TimeEntry {
   tagId: string | null
   tag?: Tag | null
   taskId: string | null
+  task?: { id: string; title: string } | null
   startTime: string
   endTime: string | null
   duration: number | null

@@ -7,6 +7,13 @@ const include = {
   timeEntries: { select: { duration: true }, where: { duration: { not: null } } },
 } as const
 
+const includeWithAssignments = {
+  ...include,
+  projectAssignments: {
+    include: { user: { select: { id: true, name: true } } },
+  },
+} as const
+
 export type ProjectRow = Awaited<ReturnType<typeof findAllByUser>>[number]
 
 export async function findAllByUser(userId: string) {
@@ -32,7 +39,7 @@ export async function findAllAccessible(user: { userId: string; role: Role }) {
   const projects = await prisma.project.findMany({
     where,
     orderBy: { createdAt: 'desc' },
-    include: { ...include, clientRef: true },
+    include: { ...includeWithAssignments, clientRef: true },
   })
   return projects.map(p => ({
     id: p.id,
@@ -40,10 +47,17 @@ export async function findAllAccessible(user: { userId: string; role: Role }) {
     client: p.clientRef?.name ?? p.client,
     clientId: p.clientId,
     color: p.color,
+    status: p.status,
     userId: p.userId,
     createdAt: p.createdAt,
     entryCount: p._count.timeEntries,
     totalSeconds: p.timeEntries.reduce((s, e) => s + (e.duration ?? 0), 0),
+    assignments: p.projectAssignments.map(a => ({
+      id: a.id,
+      userId: a.userId,
+      user: a.user,
+      accessLevel: a.accessLevel,
+    })),
   }))
 }
 
@@ -70,9 +84,10 @@ export async function createProject(data: {
 export async function updateProject(
   id: string,
   userId: string,
-  data: { name?: string; client?: string | null; clientId?: string | null; color?: string }
+  data: { name?: string; client?: string | null; clientId?: string | null; color?: string; status?: string }
 ) {
-  return prisma.project.update({ where: { id }, data })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return prisma.project.update({ where: { id }, data: data as any })
 }
 
 export async function deleteProject(id: string, userId: string) {

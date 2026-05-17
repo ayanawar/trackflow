@@ -2,7 +2,11 @@ import prisma from '@/lib/prisma'
 import { timeEntryAccessWhere } from '@/services/authorization.service'
 import type { Role } from '@/types'
 
-const include = { project: true, tag: true } as const
+const include = {
+  project: true,
+  tag: true,
+  task: { select: { id: true, title: true } },
+} as const
 
 export async function findAllByUser(userId: string, limit = 100, filters: { tagId?: string | null } = {}) {
   return prisma.timeEntry.findMany({

@@ -323,7 +323,8 @@ export default function TrackerPage() {
 
           {/* ── Daily sections ────────────────────────────────────────────── */}
           <div className="space-y-3">
-            {weekDays.map((day, i) => {
+            {[...weekDays].reverse().map((day, _ri) => {
+              const i             = 6 - _ri
               const allDayEntries = entriesByDay[i] ?? []
               const dayEntries    = allDayEntries.filter(e => !e.isRunning && !e.isPaused)
               const daySecs       = dayEntries.reduce((s, e) => s + (e.duration ?? 0), 0)
