@@ -164,7 +164,6 @@ export default function TimerBar({ projects, runningEntry }: Props) {
 
   const isBusy = startMutation.isPending || stopMutation.isPending || pauseMutation.isPending || resumeMutation.isPending
   const activeProject = projects.find(p => p.id === projectId)
-  const activeTask = projectTasks.find(t => t.id === taskId)
   const canStart = !!projectId
 
   return (
