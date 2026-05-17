@@ -74,18 +74,22 @@ enum SecurityEventType {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  name           String
-  email          String   @unique
-  password       String?
-  googleId       String?  @unique
-  avatarUrl      String?
-  workspace      String   @default("My Workspace")
-  dailyHoursGoal Int      @default(8)
-  role           Role     @default(EMPLOYEE)
-  activeOrgId    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  email            String   @unique
+  password         String?
+  googleId         String?  @unique
+  avatarUrl        String?
+  workspace        String   @default("My Workspace")
+  dailyHoursGoal   Int      @default(8)
+  role             Role     @default(EMPLOYEE)
+  activeOrgId      String?
+  managerId        String?
+  remindersEnabled Boolean  @default(true)
+  reminderTime     Int      @default(18)
+  notifyManager    Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   projects            Project[]
   timeEntries         TimeEntry[]
@@ -102,7 +106,10 @@ model User {
   approvedTimeEntries TimeEntry[]          @relation("TimeEntryApprover")
   assignedTasks       Task[]               @relation("TaskAssignee")
   createdTasks        Task[]               @relation("TaskCreator")
+  manager             User?                @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
+  managedUsers        User[]               @relation("UserManager")
 
+  @@index([managerId])
   @@map("users")
 }
 
@@ -245,15 +252,16 @@ model Client {
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  name      String
-  client    String?
-  clientId  String?
-  color     String        @default("#4f8ef7")
-  status    ProjectStatus @default(ACTIVE)
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  client         String?
+  clientId       String?
+  color          String        @default("#4f8ef7")
+  status         ProjectStatus @default(ACTIVE)
+  estimatedHours Int?
+  userId         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   clientRef          Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)

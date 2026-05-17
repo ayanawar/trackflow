@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer'
 import { buildAppUrl } from '@/lib/appUrl'
+import { reminderEmployeeHtml, reminderEmployeeSubject } from '@/lib/emails/reminder-employee'
+import { reminderManagerHtml, reminderManagerSubject } from '@/lib/emails/reminder-manager'
+import { projectOverrunHtml, projectOverrunSubject } from '@/lib/emails/project-overrun'
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? 'mailpit.bugsbytes.com',
@@ -37,6 +40,69 @@ export async function sendPasswordResetEmail(email: string, rawToken: string, ap
         </p>
       </div>
     `,
+  })
+}
+
+export async function sendReminderEmployee(
+  email: string,
+  name: string,
+  date: string,
+  appBaseUrl?: string
+) {
+  const trackerUrl = buildAppUrl('/tracker', appBaseUrl)
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: reminderEmployeeSubject(date),
+    html: reminderEmployeeHtml({ name, trackerUrl, date }),
+  })
+}
+
+export async function sendReminderManager(
+  email: string,
+  managerName: string,
+  date: string,
+  missing: { name: string; email: string }[],
+  teamName?: string,
+  appBaseUrl?: string
+) {
+  const trackerUrl = buildAppUrl('/tracker', appBaseUrl)
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: reminderManagerSubject(date, missing.length),
+    html: reminderManagerHtml({ managerName, date, teamName, missing, trackerUrl }),
+  })
+}
+
+export async function sendProjectOverrun(
+  email: string,
+  recipientName: string,
+  project: {
+    name: string
+    color: string
+    estimatedHours: number
+    loggedHours: number
+  },
+  appBaseUrl?: string
+) {
+  const trackerUrl = buildAppUrl('/projects', appBaseUrl)
+  const overrunHours = project.loggedHours - project.estimatedHours
+  const overrunPercent = Math.round((overrunHours / project.estimatedHours) * 100)
+  await transporter.sendMail({
+    from: FROM,
+    to: email,
+    subject: projectOverrunSubject(project.name, overrunPercent),
+    html: projectOverrunHtml({
+      recipientName,
+      projectName: project.name,
+      projectColor: project.color,
+      estimatedHours: project.estimatedHours,
+      loggedHours: project.loggedHours,
+      overrunHours,
+      overrunPercent,
+      trackerUrl,
+    }),
   })
 }
 

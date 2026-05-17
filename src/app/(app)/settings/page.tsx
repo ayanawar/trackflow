@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation } from '@tanstack/react-query'
-import { Settings, Clock, Target, Sun, Moon } from 'lucide-react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Settings, Clock, Target, Sun, Moon, Bell } from 'lucide-react'
 import api from '@/lib/apiClient'
 
 import { useAuthStore } from '@/lib/authStore'
@@ -11,6 +11,13 @@ import { cn } from '@/lib/utils'
 
 interface ProfileForm { name: string; workspace: string }
 interface GoalForm { dailyHoursGoal: number }
+
+interface ReminderPrefs {
+  remindersEnabled: boolean
+  reminderTime: number
+  notifyManager: boolean
+  managerId: string | null
+}
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
@@ -34,6 +41,26 @@ export default function SettingsPage() {
   const goalMutation = useMutation({
     mutationFn: () => api.patch('/auth/me', { dailyHoursGoal: dailyGoal }),
     onSuccess: ({ data }) => setUser(data),
+  })
+
+  const { data: reminderPrefs, isLoading: prefsLoading } = useQuery<ReminderPrefs>({
+    queryKey: ['reminder-preferences'],
+    queryFn: () => api.get('/user/reminder-preferences').then(r => r.data),
+  })
+  const [remindersEnabled, setRemindersEnabled] = useState<boolean | null>(null)
+  const [reminderTime, setReminderTime] = useState<number | null>(null)
+  const [notifyManager, setNotifyManager] = useState<boolean | null>(null)
+
+  const effectiveRemindersEnabled = remindersEnabled ?? reminderPrefs?.remindersEnabled ?? true
+  const effectiveReminderTime = reminderTime ?? reminderPrefs?.reminderTime ?? 18
+  const effectiveNotifyManager = notifyManager ?? reminderPrefs?.notifyManager ?? true
+
+  const reminderMutation = useMutation({
+    mutationFn: () => api.patch('/user/reminder-preferences', {
+      remindersEnabled: effectiveRemindersEnabled,
+      reminderTime: effectiveReminderTime,
+      notifyManager: effectiveNotifyManager,
+    }),
   })
 
   return (<>
@@ -180,6 +207,106 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Smart Reminders */}
+        <div className="card p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Bell size={14} className="text-accent" />
+            <h2 className="text-sm font-semibold text-white">Smart Reminders</h2>
+          </div>
+          <p className="text-xs text-white/40 mb-5">
+            Get emailed if you forget to log hours by end of day.
+          </p>
+
+          {prefsLoading ? (
+            <div className="space-y-3 animate-pulse">
+              <div className="h-10 rounded-lg bg-white/[0.04]" />
+              <div className="h-10 rounded-lg bg-white/[0.04]" />
+              <div className="h-10 rounded-lg bg-white/[0.04]" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Enable toggle */}
+              <div className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.05]">
+                <div>
+                  <p className="text-sm text-white">Enable reminders</p>
+                  <p className="text-xs text-white/40 mt-0.5">Email me if I have not logged hours by the reminder time</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRemindersEnabled(!effectiveRemindersEnabled)}
+                  className={cn(
+                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
+                    effectiveRemindersEnabled ? 'bg-accent' : 'bg-white/10'
+                  )}
+                >
+                  <span className={cn(
+                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200',
+                    effectiveRemindersEnabled ? 'translate-x-5' : 'translate-x-0'
+                  )} />
+                </button>
+              </div>
+
+              {/* Reminder time */}
+              <div className={cn('space-y-2', !effectiveRemindersEnabled && 'opacity-40 pointer-events-none')}>
+                <label className="label">Reminder time</label>
+                <select
+                  className="input"
+                  value={effectiveReminderTime}
+                  onChange={e => setReminderTime(Number(e.target.value))}
+                >
+                  {[
+                    { value: 17, label: '5:00 PM' },
+                    { value: 18, label: '6:00 PM' },
+                    { value: 19, label: '7:00 PM' },
+                  ].map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-white/30">Times are in UTC. Adjust for your timezone.</p>
+              </div>
+
+              {/* Notify manager toggle */}
+              {reminderPrefs?.managerId && (
+                <div className={cn(
+                  'flex items-center justify-between gap-4 py-2 border-t border-white/[0.05]',
+                  !effectiveRemindersEnabled && 'opacity-40 pointer-events-none'
+                )}>
+                  <div>
+                    <p className="text-sm text-white">Notify my manager</p>
+                    <p className="text-xs text-white/40 mt-0.5">Also send a summary to your manager</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNotifyManager(!effectiveNotifyManager)}
+                    className={cn(
+                      'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
+                      effectiveNotifyManager ? 'bg-accent' : 'bg-white/10'
+                    )}
+                  >
+                    <span className={cn(
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200',
+                      effectiveNotifyManager ? 'translate-x-5' : 'translate-x-0'
+                    )} />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center pt-1">
+                <button
+                  type="button"
+                  className="btn-primary w-full sm:w-auto"
+                  onClick={() => reminderMutation.mutate()}
+                  disabled={reminderMutation.isPending}
+                >
+                  {reminderMutation.isPending ? 'Saving…' : 'Save preferences'}
+                </button>
+                {reminderMutation.isSuccess && <span className="text-xs text-accent-green">✓ Saved!</span>}
+                {reminderMutation.isError && <span className="text-xs text-accent-red">Failed to save</span>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Danger zone */}

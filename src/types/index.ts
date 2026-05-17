@@ -39,6 +39,11 @@ export interface User {
   email: string
   workspace: string
   role: Role
+  dailyHoursGoal?: number
+  managerId?: string | null
+  remindersEnabled?: boolean
+  reminderTime?: number
+  notifyManager?: boolean
   createdAt: string
 }
 
@@ -59,6 +64,7 @@ export interface Project {
   clientRef?: Client | null
   color: string
   status?: ProjectStatus
+  estimatedHours?: number | null
   userId: string
   totalSeconds?: number
   entryCount?: number

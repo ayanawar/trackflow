@@ -21,6 +21,7 @@ const PUBLIC_API_PATHS  = [
   '/api/docs',
   '/api/openapi.json',
   '/api/invitations',
+  '/api/cron/', // Cron jobs are protected by CRON_SECRET, not JWT
 ]
 
 export async function middleware(req: NextRequest) {
