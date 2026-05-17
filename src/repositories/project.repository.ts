@@ -86,8 +86,7 @@ export async function updateProject(
   userId: string,
   data: { name?: string; client?: string | null; clientId?: string | null; color?: string; status?: string }
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return prisma.project.update({ where: { id }, data: data as any })
+  return prisma.project.update({ where: { id }, data: data as Parameters<typeof prisma.project.update>[0]['data'] })
 }
 
 export async function deleteProject(id: string, userId: string) {
