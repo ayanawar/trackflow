@@ -55,8 +55,7 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 }
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function RadialTooltip({ active, payload }: any) {
+function RadialTooltip({ active, payload }: { active?: boolean; payload?: { value: number; payload: { name: string; fill: string; pct: number } }[] }) {
   if (!active || !payload?.length) return null
   const d = payload[0]
   return (
