@@ -1,34 +1,42 @@
 'use client'
 import { useState } from 'react'
-import { Sparkles, Send, Lock } from 'lucide-react'
+import { Sparkles, Send, RefreshCw, MessageSquare, Lightbulb } from 'lucide-react'
 import api from '@/lib/apiClient'
-
 import SafeMarkdown from '@/components/ui/SafeMarkdown'
 import { useTimeEntries } from '@/hooks/useTimeEntries'
 import { useStats } from '@/hooks/useStats'
 import { useProjects } from '@/hooks/useProjects'
-import { useAuthStore } from '@/lib/authStore'
+import { useQuery } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 
-const QUICK_PROMPTS = [
-  'Summarize my time tracking this week',
-  'Which project needs more focus?',
-  'Am I on track to hit 40 hours this week?',
-  'Give me 3 productivity tips based on my patterns',
-  'What percentage of time is on each project?',
-]
+function formatHours(seconds: number) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h === 0) return `${m}m`
+  return m === 0 ? `${h}h` : `${h}h ${m}m`
+}
+
+interface WeeklySummaryData {
+  summary: string
+  suggestions: string[]
+}
 
 export default function InsightsPage() {
-  const { user } = useAuthStore()
   const [question, setQuestion] = useState('')
   const [response, setResponse] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const canUseInsights = user?.role === 'ADMIN' || user?.role === 'MANAGER'
-
   const { data: entries = [] } = useTimeEntries(100)
   const { data: stats } = useStats()
   const { data: projects = [] } = useProjects()
+
+  const { data: weeklySummary, isLoading: summaryLoading, refetch: refetchSummary, isError: summaryError } = useQuery<WeeklySummaryData>({
+    queryKey: ['ai-weekly-summary'],
+    queryFn: () => api.get('/ai/weekly-summary').then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
 
   const buildContext = () => ({
     todaySeconds: stats?.todaySeconds ?? 0,
@@ -54,7 +62,7 @@ export default function InsightsPage() {
     setResponse('')
     setErrorMsg('')
     try {
-      const res = await api.post('/insights', { question: q, context: buildContext() })
+      const res = await api.post('/ai/query', { question: q, context: buildContext() })
       setResponse(res.data.answer ?? 'No response.')
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status
@@ -68,27 +76,7 @@ export default function InsightsPage() {
     }
   }
 
-  if (!canUseInsights) {
-    return (
-      <>
-        <div className="page-header flex items-center gap-3">
-          <Sparkles size={15} className="text-accent-purple" />
-          <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
-        </div>
-        <div className="page-body flex items-center justify-center">
-          <div className="text-center max-w-sm px-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-              <Lock size={22} className="text-white/30" />
-            </div>
-            <h2 className="text-base font-semibold text-white mb-2">Manager &amp; Admin only</h2>
-            <p className="text-sm text-white/40">
-              AI Insights is available to Managers and Admins. Contact your workspace admin to request access.
-            </p>
-          </div>
-        </div>
-      </>
-    )
-  }
+  const suggestions = weeklySummary?.suggestions ?? []
 
   return (
     <>
@@ -96,36 +84,112 @@ export default function InsightsPage() {
         <Sparkles size={15} className="text-accent-purple" />
         <div className="min-w-0">
           <h1 className="text-[15px] font-semibold text-white">AI Insights</h1>
-          <p className="text-xs text-white/40 mt-0.5">Powered by Claude</p>
         </div>
       </div>
 
       <div className="page-body">
-        <div className="mx-auto w-full max-w-3xl">
-          <div className="card p-4 sm:p-5 mb-6">
+        <div className="mx-auto w-full max-w-3xl flex flex-col gap-5">
+
+          {/* Weekly Summary Card */}
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={13} className="text-accent-purple" />
+                <span className="text-xs font-semibold text-accent-purple uppercase tracking-wider">Weekly Summary</span>
+              </div>
+              <button
+                onClick={() => refetchSummary()}
+                disabled={summaryLoading}
+                className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors"
+              >
+                <RefreshCw size={11} className={cn(summaryLoading && 'animate-spin')} />
+                Refresh
+              </button>
+            </div>
+
+            {/* Stats row */}
+            <div className="flex gap-4 mb-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-white/30 uppercase tracking-wider">This week</span>
+                <span className="text-lg font-mono font-semibold text-white">{formatHours(stats?.weekSeconds ?? 0)}</span>
+              </div>
+              <div className="w-px bg-white/[0.07]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-white/30 uppercase tracking-wider">Today</span>
+                <span className="text-lg font-mono font-semibold text-white">{formatHours(stats?.todaySeconds ?? 0)}</span>
+              </div>
+              <div className="w-px bg-white/[0.07]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-white/30 uppercase tracking-wider">Entries</span>
+                <span className="text-lg font-mono font-semibold text-white">{stats?.totalEntries ?? 0}</span>
+              </div>
+            </div>
+
+            {summaryLoading ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-3 bg-white/[0.06] rounded-full w-full" />
+                <div className="h-3 bg-white/[0.06] rounded-full w-5/6" />
+                <div className="h-3 bg-white/[0.06] rounded-full w-4/6" />
+              </div>
+            ) : summaryError || !weeklySummary ? (
+              <p className="text-sm text-white/30 italic">
+                {summaryError ? 'Could not load AI summary — check your GEMINI_API_KEY.' : 'No data yet this week.'}
+              </p>
+            ) : (
+              <p className="text-sm text-white/70 leading-relaxed">{weeklySummary.summary}</p>
+            )}
+          </div>
+
+          {/* NL Query Box */}
+          <div className="card p-4 sm:p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <MessageSquare size={13} className="text-white/40" />
+              <span className="text-xs font-semibold text-white/40 uppercase tracking-wider">Ask anything</span>
+            </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 className="input flex-1"
-                placeholder="Ask about your time data…"
+                placeholder="e.g. How many hours this week? Which project is most active?"
                 value={question}
                 onChange={e => setQuestion(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && ask(question)}
               />
-              <button className="btn-primary flex-shrink-0 w-full sm:w-auto" onClick={() => ask(question)} disabled={loading}>
+              <button
+                className="btn-primary flex-shrink-0 w-full sm:w-auto"
+                onClick={() => ask(question)}
+                disabled={loading || !question.trim()}
+              >
                 <Send size={14} />{loading ? 'Thinking…' : 'Ask'}
               </button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {QUICK_PROMPTS.map(p => (
-                <button key={p}
-                  className="text-[12px] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-accent-purple hover:border-accent-purple/40 transition-all"
-                  onClick={() => { setQuestion(p); ask(p) }}>
-                  {p}
-                </button>
-              ))}
-            </div>
+
+            {/* AI-generated smart suggestions */}
+            {suggestions.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {suggestions.map(s => (
+                  <button
+                    key={s}
+                    className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-accent-purple hover:border-accent-purple/40 transition-all"
+                    onClick={() => { setQuestion(s); ask(s) }}
+                  >
+                    <Lightbulb size={10} />
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Fallback static suggestions while loading */}
+            {summaryLoading && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {['How many hours this week?', 'Which project took most time?', 'Am I on track for 40h?'].map(s => (
+                  <div key={s} className="h-7 w-36 rounded-full bg-white/[0.04] animate-pulse" />
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Response / Error */}
           {errorMsg && (
             <div className="card p-5 border-l-2 border-accent-red">
               <p className="text-sm text-accent-red">{errorMsg}</p>
@@ -136,12 +200,13 @@ export default function InsightsPage() {
             <div className="card p-5 border-l-2 border-accent-purple">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={13} className="text-accent-purple" />
-                <span className="text-xs font-medium text-accent-purple">Claude</span>
+                <span className="text-xs font-medium text-accent-purple">AI Answer</span>
               </div>
               {loading ? (
-                <div className="flex items-center gap-2 text-white/40 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-pulse" />
-                  Analyzing your data…
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-3 bg-white/[0.06] rounded-full w-full" />
+                  <div className="h-3 bg-white/[0.06] rounded-full w-4/5" />
+                  <div className="h-3 bg-white/[0.06] rounded-full w-3/5" />
                 </div>
               ) : (
                 <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
@@ -152,7 +217,6 @@ export default function InsightsPage() {
           )}
         </div>
       </div>
-    
-  </>
+    </>
   )
 }
