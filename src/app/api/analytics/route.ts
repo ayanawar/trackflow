@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
 import { ok, unauthorized, serverError } from '@/lib/response'
 import { timeEntryAccessWhere } from '@/services/authorization.service'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import prisma from '@/lib/prisma'
 import type { Role } from '@/types'
 
@@ -11,6 +12,8 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
 
     const { searchParams } = new URL(req.url)
     const days = Math.min(365, Math.max(1, parseInt(searchParams.get('range') ?? '30')))
@@ -21,7 +24,7 @@ export async function GET(req: NextRequest) {
     rangeStart.setHours(0, 0, 0, 0)
 
     const user = { userId: session.userId, role: session.role as Role }
-    const entryWhere = await timeEntryAccessWhere(user)
+    const entryWhere = await timeEntryAccessWhere(user, ctx.workspaceId)
 
     const entries = await prisma.timeEntry.findMany({
       where: {

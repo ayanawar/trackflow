@@ -16,14 +16,16 @@ export async function requestWithRole(
   })
   const headers = new Headers(init.headers)
   headers.set('cookie', `tf_token=${token}`)
-  return new NextRequest(url, { ...init, headers })
+  const { signal: _signal, ...safeInit } = init
+  return new NextRequest(url, { ...safeInit, headers })
 }
 
 export function jsonRequest(url: string, body: unknown, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
   headers.set('content-type', 'application/json')
+  const { signal: _signal, ...safeInit } = init
   return new NextRequest(url, {
-    ...init,
+    ...safeInit,
     method: init.method ?? 'POST',
     headers,
     body: JSON.stringify(body),

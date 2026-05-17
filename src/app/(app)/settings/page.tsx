@@ -9,7 +9,7 @@ import { useAuthStore } from '@/lib/authStore'
 import { useThemeStore } from '@/lib/themeStore'
 import { cn } from '@/lib/utils'
 
-interface ProfileForm { name: string; workspace: string }
+interface ProfileForm { name: string }
 interface GoalForm { dailyHoursGoal: number }
 
 interface ReminderPrefs {
@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const { user, setUser } = useAuthStore()
   const { theme, toggle: toggleTheme } = useThemeStore()
   const { register, handleSubmit } = useForm<ProfileForm>({
-    defaultValues: { name: user?.name ?? '', workspace: user?.workspace ?? '' },
+    defaultValues: { name: user?.name ?? '' },
   })
 
   const profileMutation = useMutation({
@@ -85,10 +85,6 @@ export default function SettingsPage() {
               <label className="label">Email</label>
               <input className="input" value={user?.email ?? ''} disabled style={{ opacity: 0.4, cursor: 'not-allowed' }} />
               <p className="text-[11px] text-white/30 mt-1">Email cannot be changed</p>
-            </div>
-            <div>
-              <label className="label">Workspace name</label>
-              <input className="input" {...register('workspace', { required: true })} />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button type="submit" className="btn-primary w-full sm:w-auto" disabled={profileMutation.isPending}>

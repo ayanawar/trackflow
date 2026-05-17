@@ -8,17 +8,17 @@ const include = {
   task: { select: { id: true, title: true } },
 } as const
 
-export async function findAllByUser(userId: string, limit = 100, filters: { tagId?: string | null } = {}) {
+export async function findAllByUser(userId: string, workspaceId: string, limit = 100, filters: { tagId?: string | null } = {}) {
   return prisma.timeEntry.findMany({
-    where: { userId, ...(filters.tagId ? { tagId: filters.tagId } : {}) },
+    where: { userId, workspaceId, ...(filters.tagId ? { tagId: filters.tagId } : {}) },
     orderBy: { startTime: 'desc' },
     take: Math.min(limit, 500),
     include,
   })
 }
 
-export async function findAllAccessible(user: { userId: string; role: Role }, limit = 100, filters: { tagId?: string | null } = {}) {
-  const where = await timeEntryAccessWhere(user)
+export async function findAllAccessible(user: { userId: string; role: Role }, workspaceId: string, limit = 100, filters: { tagId?: string | null } = {}) {
+  const where = await timeEntryAccessWhere(user, workspaceId)
   return prisma.timeEntry.findMany({
     where: { AND: [where, filters.tagId ? { tagId: filters.tagId } : {}] },
     orderBy: { startTime: 'desc' },
@@ -27,19 +27,19 @@ export async function findAllAccessible(user: { userId: string; role: Role }, li
   })
 }
 
-export async function findEntryById(id: string, userId: string) {
-  const e = await prisma.timeEntry.findUnique({ where: { id }, include })
+export async function findEntryById(id: string, userId: string, workspaceId: string) {
+  const e = await prisma.timeEntry.findFirst({ where: { id, workspaceId }, include })
   if (!e || e.userId !== userId) return null
   return e
 }
 
-export async function findAccessibleEntryById(id: string, user: { userId: string; role: Role }) {
-  const where = await timeEntryAccessWhere(user)
+export async function findAccessibleEntryById(id: string, user: { userId: string; role: Role }, workspaceId: string) {
+  const where = await timeEntryAccessWhere(user, workspaceId)
   return prisma.timeEntry.findFirst({ where: { AND: [{ id }, where] }, include })
 }
 
-export async function findRunning(userId: string) {
-  return prisma.timeEntry.findFirst({ where: { userId, isRunning: true }, include })
+export async function findRunning(userId: string, workspaceId: string) {
+  return prisma.timeEntry.findFirst({ where: { userId, workspaceId, isRunning: true }, include })
 }
 
 export async function createEntry(data: {
@@ -48,6 +48,7 @@ export async function createEntry(data: {
   tagId: string | null
   taskId: string | null
   userId: string
+  workspaceId: string
   startTime: Date
   endTime: Date | null
   duration: number | null
@@ -60,6 +61,7 @@ export async function createEntry(data: {
 export async function updateEntry(
   id: string,
   userId: string,
+  workspaceId: string,
   data: {
     description?: string
     projectId?: string | null
@@ -74,11 +76,13 @@ export async function updateEntry(
     billable?: boolean
   }
 ) {
-  return prisma.timeEntry.update({ where: { id, userId }, data, include })
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, userId, workspaceId } })
+  return prisma.timeEntry.update({ where: { id }, data, include })
 }
 
 export async function updateEntryById(
   id: string,
+  workspaceId: string,
   data: {
     description?: string
     projectId?: string | null
@@ -93,52 +97,58 @@ export async function updateEntryById(
     billable?: boolean
   }
 ) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, workspaceId } })
   return prisma.timeEntry.update({ where: { id }, data, include })
 }
 
-export async function stopRunning(userId: string, endTime: Date) {
+export async function stopRunning(userId: string, workspaceId: string, endTime: Date) {
   // Also handle paused entries — stop them all
   return prisma.timeEntry.updateMany({
-    where: { userId, OR: [{ isRunning: true }, { isPaused: true }] },
+    where: { userId, workspaceId, OR: [{ isRunning: true }, { isPaused: true }] },
     data: { endTime, isRunning: false, isPaused: false },
   })
 }
 
-export async function stopOne(id: string, userId: string, endTime: Date, durationSeconds: number) {
+export async function stopOne(id: string, userId: string, workspaceId: string, endTime: Date, durationSeconds: number) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, userId, workspaceId } })
   return prisma.timeEntry.update({
-    where: { id, userId },
+    where: { id },
     data: { endTime, duration: durationSeconds, isRunning: false, isPaused: false },
     include,
   })
 }
 
-export async function pauseOne(id: string, userId: string, pausedDuration: number) {
+export async function pauseOne(id: string, userId: string, workspaceId: string, pausedDuration: number) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, userId, workspaceId } })
   return prisma.timeEntry.update({
-    where: { id, userId },
+    where: { id },
     data: { isRunning: false, isPaused: true, pausedDuration },
     include,
   })
 }
 
-export async function resumeOne(id: string, userId: string, startTime: Date) {
+export async function resumeOne(id: string, userId: string, workspaceId: string, startTime: Date) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, userId, workspaceId } })
   return prisma.timeEntry.update({
-    where: { id, userId },
+    where: { id },
     data: { isRunning: true, isPaused: false, startTime },
     include,
   })
 }
 
-export async function findActiveByUser(userId: string) {
+export async function findActiveByUser(userId: string, workspaceId: string) {
   return prisma.timeEntry.findFirst({
-    where: { userId, OR: [{ isRunning: true }, { isPaused: true }] },
+    where: { userId, workspaceId, OR: [{ isRunning: true }, { isPaused: true }] },
     include,
   })
 }
 
-export async function deleteEntry(id: string, userId: string) {
-  return prisma.timeEntry.delete({ where: { id, userId } })
+export async function deleteEntry(id: string, userId: string, workspaceId: string) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, userId, workspaceId } })
+  return prisma.timeEntry.delete({ where: { id } })
 }
 
-export async function deleteEntryById(id: string) {
+export async function deleteEntryById(id: string, workspaceId: string) {
+  await prisma.timeEntry.findFirstOrThrow({ where: { id, workspaceId } })
   return prisma.timeEntry.delete({ where: { id } })
 }

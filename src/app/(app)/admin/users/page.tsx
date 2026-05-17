@@ -8,6 +8,7 @@ import { useAuthStore } from '@/lib/authStore'
 import api from '@/lib/apiClient'
 import { useRouter } from 'next/navigation'
 import type { Role } from '@/types'
+import { useWorkspaces } from '@/hooks/useWorkspaces'
 
 interface UserRow {
   id: string
@@ -18,7 +19,7 @@ interface UserRow {
   createdAt: string
 }
 
-interface InviteForm { email: string; role: Role }
+interface InviteForm { email: string; role: Role; workspaceId: string }
 
 const ROLES: Role[] = ['ADMIN', 'MANAGER', 'EMPLOYEE']
 
@@ -35,7 +36,7 @@ const roleBadge: Record<Role, string> = {
 }
 
 export default function AdminUsersPage() {
-  const { user: me, isLoading: authLoading } = useAuthStore()
+  const { user: me, isLoading: authLoading, activeWorkspaceId } = useAuthStore()
   const router = useRouter()
   const queryClient = useQueryClient()
   const [savingId, setSavingId] = useState<string | null>(null)
@@ -52,6 +53,12 @@ export default function AdminUsersPage() {
     queryFn: () => api.get('/admin/users').then(r => r.data),
     enabled: !authLoading && me?.role === 'ADMIN',
   })
+  const { data: workspaces = [] } = useWorkspaces()
+  const adminWorkspaces = workspaces.filter(w => w.role === 'ADMIN')
+  const defaultWorkspaceId =
+    adminWorkspaces.find(w => w.id === activeWorkspaceId)?.id ??
+    adminWorkspaces[0]?.id ??
+    ''
 
   const roleMutation = useMutation({
     mutationFn: ({ id, role }: { id: string; role: Role }) =>
@@ -61,15 +68,22 @@ export default function AdminUsersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
   })
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<InviteForm>({
-    defaultValues: { role: 'EMPLOYEE' },
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<InviteForm>({
+    defaultValues: { role: 'EMPLOYEE', workspaceId: defaultWorkspaceId },
   })
+  const selectedWorkspaceId = watch('workspaceId')
+
+  useEffect(() => {
+    if (!showInviteModal || !defaultWorkspaceId) return
+    setValue('workspaceId', selectedWorkspaceId || defaultWorkspaceId)
+  }, [defaultWorkspaceId, selectedWorkspaceId, setValue, showInviteModal])
 
   const inviteMutation = useMutation({
     mutationFn: (data: InviteForm) => api.post('/admin/invites', data).then(r => r.data),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       setInviteLink(data.inviteUrl)
-      reset()
+      reset({ role: 'EMPLOYEE', workspaceId: defaultWorkspaceId })
     },
   })
 
@@ -84,7 +98,7 @@ export default function AdminUsersPage() {
   const closeModal = () => {
     setShowInviteModal(false)
     setInviteLink(null)
-    reset()
+    reset({ role: 'EMPLOYEE', workspaceId: defaultWorkspaceId })
     inviteMutation.reset()
   }
 
@@ -229,6 +243,27 @@ export default function AdminUsersPage() {
             ) : (
               <form onSubmit={handleSubmit(d => inviteMutation.mutate(d))} className="space-y-4">
                 <div>
+                  <label className="label">Workspace</label>
+                  <select
+                    className="input"
+                    {...register('workspaceId', { required: true })}
+                    disabled={adminWorkspaces.length <= 1}
+                  >
+                    {adminWorkspaces.map(workspace => (
+                      <option key={workspace.id} value={workspace.id} className="bg-[#1a1a2e]">
+                        {workspace.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.workspaceId && (
+                    <p className="text-xs text-accent-red mt-1.5">Select a workspace for this invite.</p>
+                  )}
+                  {adminWorkspaces.length === 0 && (
+                    <p className="text-xs text-accent-red mt-1.5">You do not have admin access to any workspace.</p>
+                  )}
+                </div>
+
+                <div>
                   <label className="label">Email address</label>
                   <input
                     className="input"
@@ -261,7 +296,7 @@ export default function AdminUsersPage() {
 
                 <div className="flex gap-2 pt-1">
                   <button type="button" className="btn-secondary flex-1 justify-center" onClick={closeModal}>Cancel</button>
-                  <button type="submit" className="btn-primary flex-1 justify-center" disabled={inviteMutation.isPending}>
+                  <button type="submit" className="btn-primary flex-1 justify-center" disabled={inviteMutation.isPending || adminWorkspaces.length === 0}>
                     {inviteMutation.isPending ? 'Creating…' : 'Create invite'}
                   </button>
                 </div>

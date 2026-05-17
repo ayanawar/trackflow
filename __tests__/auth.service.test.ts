@@ -6,7 +6,16 @@ vi.mock('@/repositories/user.repository', () => ({
   findById: vi.fn(),
   createUser: vi.fn(),
   createUserWithRole: vi.fn(),
+  setActiveWorkspace: vi.fn(),
   updatePassword: vi.fn(),
+}))
+vi.mock('@/repositories/organization.repository', () => ({
+  createWithOwnerAndWorkspace: vi.fn(),
+}))
+vi.mock('@/lib/prisma', () => ({
+  default: {
+    $transaction: vi.fn(async (callback: any) => callback({})),
+  },
 }))
 vi.mock('@/repositories/refreshToken.repository', () => ({
   create: vi.fn(),
@@ -33,6 +42,7 @@ vi.mock('@/lib/mailer', () => ({
 vi.mock('google-auth-library')
 
 import * as userRepo from '@/repositories/user.repository'
+import * as orgRepo from '@/repositories/organization.repository'
 import * as refreshTokenRepo from '@/repositories/refreshToken.repository'
 import * as passwordResetTokenRepo from '@/repositories/passwordResetToken.repository'
 import * as inviteTokenRepo from '@/repositories/inviteToken.repository'
@@ -42,7 +52,8 @@ const mockUser = {
   id: 'user1',
   name: 'Test User',
   email: 'test@example.com',
-  workspace: 'Test Workspace',
+  activeOrgId: null,
+  activeWorkspaceId: 'workspace_1',
   role: 'EMPLOYEE',
   dailyHoursGoal: 8,
   createdAt: new Date(),
@@ -56,9 +67,11 @@ describe('register', () => {
   it('creates a user and returns rawRefreshToken', async () => {
     vi.mocked(userRepo.findByEmail).mockResolvedValue(null)
     vi.mocked(userRepo.createUserWithRole).mockResolvedValue({ ...mockUser, role: 'ADMIN' })
+    vi.mocked(orgRepo.createWithOwnerAndWorkspace).mockResolvedValue({ orgId: 'org_1', workspaceId: 'workspace_1' })
+    vi.mocked(userRepo.setActiveWorkspace).mockResolvedValue({ ...mockUser, role: 'ADMIN' })
     vi.mocked(refreshTokenRepo.create).mockResolvedValue({} as any)
 
-    const result = await register({ name: 'Test', email: 'test@example.com', password: 'password123', workspace: 'WS' })
+    const result = await register({ name: 'Test', email: 'test@example.com', password: 'password123', organizationName: 'Org', workspaceName: 'WS' })
 
     expect(userRepo.findByEmail).toHaveBeenCalledWith('test@example.com')
     expect(userRepo.createUserWithRole).toHaveBeenCalledWith(expect.objectContaining({ role: 'ADMIN' }))
@@ -70,7 +83,7 @@ describe('register', () => {
   it('throws if email already exists', async () => {
     vi.mocked(userRepo.findByEmail).mockResolvedValue(mockUser as any)
     await expect(
-      register({ name: 'Test', email: 'test@example.com', password: 'password123', workspace: 'WS' })
+      register({ name: 'Test', email: 'test@example.com', password: 'password123', organizationName: 'Org', workspaceName: 'WS' })
     ).rejects.toThrow('Email already in use')
   })
 
@@ -82,8 +95,10 @@ describe('register', () => {
       expect(data.role).toBe('ADMIN')
       return { ...mockUser, role: 'ADMIN' }
     })
+    vi.mocked(orgRepo.createWithOwnerAndWorkspace).mockResolvedValue({ orgId: 'org_1', workspaceId: 'workspace_1' })
+    vi.mocked(userRepo.setActiveWorkspace).mockResolvedValue({ ...mockUser, role: 'ADMIN' })
     vi.mocked(refreshTokenRepo.create).mockResolvedValue({} as any)
-    await register({ name: 'T', email: 'a@b.com', password: 'password123', workspace: 'W' })
+    await register({ name: 'T', email: 'a@b.com', password: 'password123', organizationName: 'Org', workspaceName: 'W' })
   })
 })
 

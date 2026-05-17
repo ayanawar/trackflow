@@ -5,6 +5,7 @@ import { getSessionFromRequest } from '@/lib/auth'
 import { inviteSchema } from '@/lib/schemas'
 import { ok, created, badRequest, unauthorized, notFound, forbidden, serverError } from '@/lib/response'
 import { listInvitations, createInvitation } from '@/services/invitation.service'
+import { WORKSPACE_HEADER } from '@/lib/workspaceContext'
 
 type Params = { params: { orgId: string } }
 
@@ -26,7 +27,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
     const body = await req.json()
-    const result = inviteSchema.safeParse(body)
+    const result = inviteSchema.safeParse({
+      ...body,
+      workspaceId: body.workspaceId ?? req.headers.get(WORKSPACE_HEADER),
+    })
     if (!result.success) return badRequest(result.error.issues[0].message)
     const outcome = await createInvitation(params.orgId, session.userId, result.data)
     if ('error' in outcome) return badRequest(outcome.error)

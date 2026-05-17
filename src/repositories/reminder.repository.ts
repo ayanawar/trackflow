@@ -57,7 +57,7 @@ export async function findUsersWithoutEntriesToday(): Promise<UserWithoutEntry[]
 
 /** Returns projects with estimatedHours set where total logged time exceeds the budget. */
 export async function findProjectsOverBudget(): Promise<OverBudgetProject[]> {
-  const projects = await prisma.project.findMany({
+  const projects = await prisma.project.findMany({ // workspace-scope-exempt: system reminder scan across all workspaces
     where: {
       estimatedHours: { not: null, gt: 0 },
       status: { in: ['ACTIVE', 'ON_HOLD'] },

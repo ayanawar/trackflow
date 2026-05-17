@@ -1,6 +1,7 @@
 import * as inviteRepo from '@/repositories/invitation.repository'
 import * as orgRepo from '@/repositories/organization.repository'
 import { hasRole } from '@/lib/roles'
+import prisma from '@/lib/prisma'
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
@@ -13,7 +14,7 @@ export async function listInvitations(orgId: string, userId: string) {
 export async function createInvitation(
   orgId: string,
   actorId: string,
-  data: { email: string; role: string }
+  data: { email: string; role: string; workspaceId: string }
 ) {
   const actorMembership = await orgRepo.findMembership(actorId, orgId)
   if (!actorMembership || !hasRole(actorMembership.role, 'ADMIN')) return { error: 'Forbidden' }
@@ -49,6 +50,9 @@ export async function acceptInvitation(token: string, userId: string, userEmail:
   if (existing) return { error: 'You are already a member of this organization' }
 
   await orgRepo.createMembership(userId, invitation.orgId, invitation.role)
+  await prisma.workspaceMembership.create({
+    data: { userId, workspaceId: invitation.workspaceId, role: 'MEMBER' },
+  })
   await inviteRepo.acceptInvitation(token)
   await orgRepo.setActiveOrg(userId, invitation.orgId)
 

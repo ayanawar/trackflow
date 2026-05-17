@@ -7,11 +7,14 @@ const statsCache = new Map<string, CacheEntry>()
 const CACHE_TTL_MS = 30_000
 
 export function invalidateStatsCache(userId: string) {
-  statsCache.delete(userId)
+  Array.from(statsCache.keys()).forEach(key => {
+    if (key.startsWith(`${userId}:`) || key.includes(`:${userId}:`)) statsCache.delete(key)
+  })
 }
 
-export async function getStats(userId: string): Promise<Stats> {
-  const cached = statsCache.get(userId)
+export async function getStats(userId: string, workspaceId: string): Promise<Stats> {
+  const cacheKey = `${userId}:${workspaceId}`
+  const cached = statsCache.get(cacheKey)
   if (cached && cached.expiresAt > Date.now()) return cached.data
 
   const now = new Date()
@@ -26,13 +29,13 @@ export async function getStats(userId: string): Promise<Stats> {
 
   const [periodEntries, totalEntries, projects] = await Promise.all([
     prisma.timeEntry.findMany({
-      where: { userId, startTime: { gte: windowStart }, duration: { not: null } },
+      where: { userId, workspaceId, startTime: { gte: windowStart }, duration: { not: null } },
       select: { duration: true, startTime: true },
     }),
-    prisma.timeEntry.count({ where: { userId } }),
+    prisma.timeEntry.count({ where: { userId, workspaceId } }),
     prisma.project.findMany({
-      where: { userId },
-      include: { timeEntries: { select: { duration: true }, where: { duration: { not: null } } } },
+      where: { userId, workspaceId },
+      include: { timeEntries: { select: { duration: true }, where: { workspaceId, duration: { not: null } } } },
     }),
   ])
 
@@ -73,14 +76,14 @@ export async function getStats(userId: string): Promise<Stats> {
     dailyTotals,
   }
 
-  statsCache.set(userId, { data, expiresAt: Date.now() + CACHE_TTL_MS })
+  statsCache.set(cacheKey, { data, expiresAt: Date.now() + CACHE_TTL_MS })
   return data
 }
 
-export async function getScopedStats(user: { userId: string; role: Role }): Promise<Stats> {
-  if (user.role === 'EMPLOYEE') return getStats(user.userId)
+export async function getScopedStats(user: { userId: string; role: Role }, workspaceId: string): Promise<Stats> {
+  if (user.role === 'EMPLOYEE') return getStats(user.userId, workspaceId)
 
-  const cacheKey = `${user.role}:${user.userId}:scoped`
+  const cacheKey = `${user.role}:${user.userId}:${workspaceId}:scoped`
   const cached = statsCache.get(cacheKey)
   if (cached && cached.expiresAt > Date.now()) return cached.data
 
@@ -92,8 +95,8 @@ export async function getScopedStats(user: { userId: string; role: Role }): Prom
   const sevenDaysAgo = new Date(todayStart)
   sevenDaysAgo.setDate(todayStart.getDate() - 6)
   const windowStart = monthStart < sevenDaysAgo ? monthStart : sevenDaysAgo
-  const entryWhere = await timeEntryAccessWhere(user)
-  const projectWhere = await projectAccessWhere(user)
+  const entryWhere = await timeEntryAccessWhere(user, workspaceId)
+  const projectWhere = await projectAccessWhere(user, workspaceId)
 
   const [periodEntries, totalEntries, projects] = await Promise.all([
     prisma.timeEntry.findMany({
@@ -103,7 +106,7 @@ export async function getScopedStats(user: { userId: string; role: Role }): Prom
     prisma.timeEntry.count({ where: entryWhere }),
     prisma.project.findMany({
       where: projectWhere,
-      include: { timeEntries: { select: { duration: true }, where: { duration: { not: null } } } },
+      include: { timeEntries: { select: { duration: true }, where: { workspaceId, duration: { not: null } } } },
     }),
   ])
 

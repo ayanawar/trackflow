@@ -5,13 +5,16 @@ import { getSessionFromRequest } from '@/lib/auth'
 import { timeEntryUpdateSchema } from '@/lib/schemas'
 import { ok, noContent, badRequest, unauthorized, forbidden, notFound, serverError } from '@/lib/response'
 import { getAccessibleEntry, updateAccessibleEntry, deleteAccessibleEntry } from '@/services/timeEntry.service'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import type { Role } from '@/types'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
-    const entry = await getAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role })
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
+    const entry = await getAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role }, ctx.workspaceId)
     if (!entry) return notFound()
     return ok(entry)
   } catch (err) {
@@ -24,11 +27,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
     const body = await req.json()
     const result = timeEntryUpdateSchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
     try {
-      const updated = await updateAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role }, result.data)
+      const updated = await updateAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role }, ctx.workspaceId, result.data)
       if (!updated) return notFound()
       return ok(updated)
     } catch (err) {
@@ -45,7 +50,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
-    const result = await deleteAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role })
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
+    const result = await deleteAccessibleEntry(params.id, { userId: session.userId, role: session.role as Role }, ctx.workspaceId)
     if (!result) return notFound()
     return noContent()
   } catch (err) {

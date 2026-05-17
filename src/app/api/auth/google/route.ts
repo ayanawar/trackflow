@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { signToken, setTokenCookie, setRefreshCookie } from '@/lib/auth'
 import { googleAuthSchema } from '@/lib/schemas'
 import { ok, badRequest, unauthorized, serverError } from '@/lib/response'
@@ -23,12 +23,18 @@ export async function POST(req: NextRequest) {
       return serverError()
     }
 
+    // New users land on the completion screen — no cookies, no DB row.
+    if (authResult.status === 'NEEDS_SETUP') {
+      return NextResponse.json(authResult, { status: 202 })
+    }
+
     const { user, rawRefreshToken } = authResult
+    if (!user) return serverError()
     const role = ('role' in user ? user.role : 'EMPLOYEE') as 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
     const token = await signToken({ userId: user.id, email: user.email, name: user.name, role })
     setTokenCookie(token)
     setRefreshCookie(rawRefreshToken)
-    return ok({ user, token })
+    return ok({ status: 'AUTHENTICATED', user, token })
   } catch (err) {
     console.error('[google-auth]', err)
     return serverError()

@@ -1,15 +1,17 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users, Tags } from 'lucide-react'
+import { Clock, LayoutDashboard, BarChart2, Folder, Sparkles, LogOut, Settings, Building2, ShieldCheck, Users, Tags, PanelsTopLeft } from 'lucide-react'
 import { useAuthStore } from '@/lib/authStore'
 import { cn } from '@/lib/utils'
+import WorkspaceSwitcher from '@/components/workspace/WorkspaceSwitcher'
 
 const navItems = [
   { href: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/tracker',       icon: Clock,           label: 'Tracker' },
   { href: '/reports',       icon: BarChart2,       label: 'Reports' },
   { href: '/projects',      icon: Folder,          label: 'Projects' },
+  { href: '/workspaces',    icon: PanelsTopLeft,   label: 'Workspaces' },
   { href: '/organizations', icon: Building2,       label: 'Organizations' },
 ]
 
@@ -42,7 +44,10 @@ export default function Sidebar() {
           </div>
           <span className="text-[16px] font-bold tracking-tight gradient-text hidden min-[360px]:block">TrackFlow</span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="hidden min-[430px]:block">
+            <WorkspaceSwitcher />
+          </div>
           <div className="w-7 h-7 rounded-full animated-gradient flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 shadow-md">
             {initials}
           </div>
@@ -59,10 +64,13 @@ export default function Sidebar() {
       {/* ── Mobile bottom nav ───────────────────────── */}
       <nav
         className={cn(
-          'fixed inset-x-0 bottom-0 z-40 grid border-t px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden',
-          `grid-cols-${mobileItems.length}`
+          'fixed inset-x-0 bottom-0 z-40 grid border-t px-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden'
         )}
-        style={{ borderColor: 'var(--border)', background: 'rgb(var(--bg-secondary) / 0.95)' }}
+        style={{
+          borderColor: 'var(--border)',
+          background: 'rgb(var(--bg-secondary) / 0.95)',
+          gridTemplateColumns: `repeat(${mobileItems.length}, minmax(0, 1fr))`,
+        }}
       >
         {mobileItems.map(({ href, icon: Icon, label }) => {
           const active = pathname.startsWith(href)
@@ -92,6 +100,10 @@ export default function Sidebar() {
             <Clock size={15} className="text-white" />
           </div>
           <span className="text-[17px] font-bold tracking-tight gradient-text">TrackFlow</span>
+        </div>
+
+        <div className="px-3 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+          <WorkspaceSwitcher align="left" />
         </div>
 
         {/* Nav */}
@@ -166,7 +178,7 @@ export default function Sidebar() {
                 {user?.name ?? 'User'}
               </p>
               <p className="text-[11px] mt-0.5 truncate" style={{ color: 'rgb(var(--text-faint))' }}>
-                {user?.workspace ?? 'Workspace'}
+                {user?.activeWorkspaceId ? 'Active workspace' : 'Workspace'}
               </p>
             </div>
           </Link>

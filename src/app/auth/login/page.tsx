@@ -9,6 +9,7 @@ import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 import AuthPageGuard from '@/components/auth/AuthPageGuard'
+import { safeNext } from '@/lib/safeNext'
 
 interface FormData { email: string; password: string }
 
@@ -25,20 +26,26 @@ export default function LoginPage() {
   const { register, handleSubmit } = useForm<FormData>()
   const [googleError, setGoogleError] = useState<string | null>(null)
   const [showPass, setShowPass] = useState(false)
+  const nextPath = () => safeNext(new URLSearchParams(window.location.search).get('next'))
 
   const loginMutation = useMutation({
     mutationFn: (data: FormData) => api.post('/auth/login', data),
     onSuccess: ({ data }) => {
       setUser(data.user)
-      router.push('/dashboard')
+      router.push(nextPath())
     },
   })
 
   const googleMutation = useMutation({
     mutationFn: (idToken: string) => api.post('/auth/google', { idToken }),
     onSuccess: ({ data }) => {
+      if (data?.status === 'NEEDS_SETUP') {
+        sessionStorage.setItem('tf_google_setup', JSON.stringify(data))
+        router.push('/auth/google/complete')
+        return
+      }
       setUser(data.user)
-      router.push('/dashboard')
+      router.push(nextPath())
     },
     onError: (err: any) => setGoogleError(err.response?.data?.error ?? 'Google sign-in failed.'),
   })

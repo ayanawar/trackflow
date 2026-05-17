@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
 import { ok, unauthorized, serverError } from '@/lib/response'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import prisma from '@/lib/prisma'
 
 /**
@@ -14,6 +15,8 @@ import prisma from '@/lib/prisma'
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
   if (!session) return unauthorized()
+  const ctx = await resolveWorkspaceContext(req, session)
+  if (!isWorkspaceContext(ctx)) return ctx
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
@@ -22,6 +25,7 @@ export async function GET(req: NextRequest) {
     const entries = await prisma.timeEntry.findMany({
       where: {
         userId: session.userId,
+        workspaceId: ctx.workspaceId,
         startTime: { gte: todayStart },
       },
       select: {

@@ -6,6 +6,7 @@ export async function create(data: {
   email: string
   role: Role
   invitedById: string
+  workspaceId: string
   expiresAt: Date
 }) {
   return prisma.inviteToken.create({ data })

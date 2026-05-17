@@ -5,17 +5,21 @@ import { getSessionFromRequest } from '@/lib/auth'
 import { timeEntrySchema } from '@/lib/schemas'
 import { ok, created, badRequest, unauthorized, forbidden, serverError } from '@/lib/response'
 import { listAccessibleEntries, createEntry } from '@/services/timeEntry.service'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import type { Role } from '@/types'
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
     const { searchParams } = new URL(req.url)
     const limit = parseInt(searchParams.get('limit') ?? '100')
     const tagId = searchParams.get('tagId')
     return ok(await listAccessibleEntries(
       { userId: session.userId, role: session.role as Role },
+      ctx.workspaceId,
       limit,
       { tagId },
     ))
@@ -29,11 +33,13 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getSessionFromRequest(req)
     if (!session) return unauthorized()
+    const ctx = await resolveWorkspaceContext(req, session)
+    if (!isWorkspaceContext(ctx)) return ctx
     const body = await req.json()
     const result = timeEntrySchema.safeParse(body)
     if (!result.success) return badRequest(result.error.issues[0].message)
     try {
-      return created(await createEntry(session.userId, result.data, session.role as Role))
+      return created(await createEntry(session.userId, ctx.workspaceId, result.data, session.role as Role))
     } catch (err) {
       if (err instanceof Error && err.message === 'Forbidden') return forbidden()
       throw err

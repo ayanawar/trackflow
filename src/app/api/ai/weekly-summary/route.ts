@@ -5,15 +5,18 @@ import { getSessionFromRequest } from '@/lib/auth'
 import { unauthorized } from '@/lib/response'
 import { generateWeeklySummary, getTimeSuggestions, RateLimitError, ServiceUnavailableError } from '@/services/insights.service'
 import { timeEntryAccessWhere } from '@/services/authorization.service'
+import { resolveWorkspaceContext, isWorkspaceContext } from '@/lib/workspaceContext'
 import prisma from '@/lib/prisma'
 import type { Role } from '@/types'
 
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
   if (!session) return unauthorized()
+  const ctx = await resolveWorkspaceContext(req, session)
+  if (!isWorkspaceContext(ctx)) return ctx
 
   const user = { userId: session.userId, role: session.role as Role }
-  const entryWhere = await timeEntryAccessWhere(user)
+  const entryWhere = await timeEntryAccessWhere(user, ctx.workspaceId)
 
   const now = new Date()
   const weekStart = new Date(now)
