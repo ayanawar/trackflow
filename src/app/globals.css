@@ -425,6 +425,154 @@ html.light nav.fixed {
   border-top-color: var(--border) !important;
 }
 
+/* ─── Login clock animation ─────────────────────────────── */
+.login-clock-stage {
+  position: relative;
+  width: min(360px, 100%);
+  aspect-ratio: 1.55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.login-clock-stage::before {
+  content: "";
+  position: absolute;
+  inset: 18% 10%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 42%, rgba(99, 102, 241, 0.32), transparent 42%),
+    radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.18), transparent 38%);
+  filter: blur(18px);
+  opacity: 0.8;
+}
+
+.login-clock-orbit {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px solid rgba(165, 180, 252, 0.16);
+}
+
+.login-clock-orbit-outer {
+  width: 280px;
+  height: 156px;
+  transform: rotate(-12deg);
+  animation: clock-orbit-drift 9s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
+}
+
+.login-clock-orbit-inner {
+  width: 210px;
+  height: 118px;
+  transform: rotate(18deg);
+  animation: clock-orbit-drift 7s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate-reverse;
+}
+
+.login-clock-face {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.035)),
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.24), rgba(14, 18, 30, 0.96) 68%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.login-clock-tick {
+  position: absolute;
+  left: calc(50% - 1px);
+  top: calc(50% - 7px);
+  width: 2px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.38);
+  transform-origin: 1px 91px;
+}
+
+.login-clock-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 4px;
+  border-radius: 999px;
+  transform-origin: 50% 100%;
+}
+
+.login-clock-hour {
+  height: 46px;
+  background: rgba(226, 232, 240, 0.78);
+  animation: clock-hand-sweep 48s linear infinite;
+}
+
+.login-clock-minute {
+  height: 62px;
+  background: rgba(129, 140, 248, 0.95);
+  animation: clock-hand-sweep 12s linear infinite;
+}
+
+.login-clock-second {
+  width: 2px;
+  height: 70px;
+  background: #22d3ee;
+  animation: clock-hand-sweep 2.8s steps(60) infinite;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.58);
+}
+
+.login-clock-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.22);
+  transform: translate(-50%, -50%);
+}
+
+.login-clock-chip {
+  position: absolute;
+  display: grid;
+  gap: 1px;
+  min-width: 78px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+
+.login-clock-chip span {
+  color: rgb(var(--text-base));
+  font-family: "DM Mono", monospace;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.login-clock-chip small {
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.login-clock-chip-a {
+  left: 8px;
+  top: 40px;
+  animation: clock-chip-float 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
+}
+
+.login-clock-chip-b {
+  right: 18px;
+  bottom: 24px;
+  animation: clock-chip-float 5.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s infinite alternate-reverse;
+}
+
 /* ─── Keyframes ─────────────────────────────────────────── */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(16px); }
@@ -471,6 +619,26 @@ html.light nav.fixed {
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+@keyframes clock-hand-sweep {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to   { transform: translateX(-50%) rotate(360deg); }
+}
+@keyframes clock-orbit-drift {
+  from { scale: 0.98; opacity: 0.7; }
+  to   { scale: 1.04; opacity: 1; }
+}
+@keyframes clock-chip-float {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, -10px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-clock-orbit,
+  .login-clock-hand,
+  .login-clock-chip {
+    animation: none !important;
+  }
 }
 
 /* ─── Utility overrides ─────────────────────────────────── */

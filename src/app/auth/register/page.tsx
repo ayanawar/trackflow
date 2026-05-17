@@ -9,6 +9,7 @@ import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 import AuthPageGuard from '@/components/auth/AuthPageGuard'
+import ClockLoginAnimation from '@/components/auth/ClockLoginAnimation'
 
 interface FormData {
   organizationName: string
@@ -96,8 +97,10 @@ export default function RegisterPage() {
               Join thousands of teams who use TrackFlow to stay organized and ship their best work.
             </p>
 
+            <ClockLoginAnimation />
+
             {/* Perks */}
-            <div className="space-y-4 mb-10">
+            <div className="space-y-4 mb-10 mt-10">
               {PERKS.map((perk, i) => (
                 <div key={perk} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${0.2 + i * 0.08}s` }}>
                   <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"

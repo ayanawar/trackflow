@@ -9,6 +9,7 @@ import api from '@/lib/apiClient'
 import { useAuthStore } from '@/lib/authStore'
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 import AuthPageGuard from '@/components/auth/AuthPageGuard'
+import ClockLoginAnimation from '@/components/auth/ClockLoginAnimation'
 import { safeNext } from '@/lib/safeNext'
 
 interface FormData { email: string; password: string }
@@ -93,8 +94,10 @@ export default function LoginPage() {
               The modern time tracker built for teams that care about productivity and clarity.
             </p>
 
+            <ClockLoginAnimation />
+
             {/* Features */}
-            <div className="space-y-3.5">
+            <div className="space-y-3.5 mt-10">
               {FEATURES.map(({ icon: Icon, text }, i) => (
                 <div key={text} className="flex items-center gap-3 animate-fade-in"
                   style={{ animationDelay: `${0.2 + i * 0.08}s` }}>
